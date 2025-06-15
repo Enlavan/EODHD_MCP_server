@@ -85,6 +85,6 @@ async def get_company_news(ticker: str, limit: int = 5) -> str:
     return json.dumps(news[:limit], indent=2) if news else "No news found."
 
 if __name__ == "__main__":
-    logger.info("Starting EODHD MCP Server...")
-    mcp.run(transport="stdio")
+    logger.info("Starting EODHD MCP HTTP Server...")
+    mcp.run(transport="streamable-http", host="127.0.0.1", port=8000, path="/mcp")
     logger.info("Server stopped")
