@@ -1,4 +1,3 @@
-````markdown
 # EODHD MCP Server
 
 **EODHD MCP Server** is a Python-based Microservice Communication Protocol (MCP) server designed to provide comprehensive access to financial and market data via the **EOD Historical Data (EODHD)** API. This MCP server enables users to easily fetch and manipulate financial datasets including income statements, balance sheets, cash flows, historical and intraday stock prices, and search for companies or stocks.
@@ -22,30 +21,22 @@ This project provides easy-to-use MCP endpoints for retrieving various financial
 
 ### 1. Clone the Repository
 
-```bash
 git clone https://github.com/yourusername/eodhd-mcp-server.git
 cd eodhd-mcp-server
-````
 
 ### 2. Install Dependencies
 
-```bash
 pip install fastmcp httpx python-dotenv
-```
 
 ### 3. Configure Environment Variables
 
 Create a `.env` file at the root of your project and include your EODHD API key:
 
-```
 EODHD_API_KEY=your_actual_eodhd_api_key
-```
 
 ### 4. Running the Server
 
-```bash
 python server.py
-```
 
 This starts the MCP HTTP server on `http://127.0.0.1:8000/mcp`.
 
@@ -68,7 +59,6 @@ The following MCP tools are available:
 
 Here's a basic client-side example of using the MCP client to query data from the server:
 
-```python
 from fastmcp import Client
 import asyncio
 import json
@@ -88,17 +78,14 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-```
 
 ## Project Structure
 
-```
 eodhd-mcp-server/
 ├── server.py                # MCP server implementation
 ├── .env                     # Environment variables (API keys)
 ├── requirements.txt         # Python dependencies
 └── README.md                # Project documentation
-```
 
 ## Dependencies
 
@@ -109,9 +96,7 @@ eodhd-mcp-server/
 
 Install dependencies with:
 
-```bash
 pip install -r requirements.txt
-```
 
 ## License
 
