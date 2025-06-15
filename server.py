@@ -3,7 +3,7 @@ import os
 import httpx
 import logging
 import sys
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from dotenv import load_dotenv
 
 # Configure logging
