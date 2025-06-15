@@ -84,34 +84,6 @@ async def get_company_news(ticker: str, limit: int = 5) -> str:
     news = data if isinstance(data, list) else data.get("news", [])
     return json.dumps(news[:limit], indent=2) if news else "No news found."
 
-@mcp.tool()
-async def get_stocks_from_search(query: str, limit: int = 5) -> str:
-    url = f"{EODHD_API_BASE}/search/{query}?fmt=json&limit={limit}"
-    data = await make_request(url)
-    if isinstance(data, dict) and data.get('error'):
-        return json.dumps({"error": data["error"]}, indent=2)
-    return json.dumps(data, indent=2) if data else "No results found."
-
-
-@mcp.tool()
-async def get_intraday_historical_data(ticker: str,
-        interval: str,
-        from_timestamp: int = None,
-        to_timestamp: int = None,
-        fmt: str = "json" ) -> str:
-    url = f"{EODHD_API_BASE}/intraday/{ticker}?interval={interval}&fmt={fmt}"
-    if from_timestamp:
-        url += f"&from={from_timestamp}"
-    if to_timestamp:
-        url += f"&to={to_timestamp}"
-
-    data = await make_request(url)
-
-    if isinstance(data, dict) and "error" in data:
-        return json.dumps({"error": data["error"]}, indent=2)
-    return json.dumps(data, indent=2) if data else "No intraday historical data found."
-
-
 if __name__ == "__main__":
     logger.info("Starting EODHD MCP Server...")
     mcp.run(transport="stdio")
