@@ -6,7 +6,8 @@ async def main():
     # Connect via HTTP to the running MCP server
     async with Client("http://127.0.0.1:8000/mcp") as client:
         tools = await client.list_tools()
-        print(f"Available tools: {tools}")
+        #print(f"Available tools: {tools}")
+        print("Available tools:", [t["name"] if isinstance(t, dict) else t for t in tools])
 
         # End of Day API test call
         result = await client.call_tool(
@@ -141,6 +142,42 @@ async def main():
             }
         )
         print("Search bonds-only:\n", search_bonds)
+
+        # --- Get list of exchanges ---
+        exchanges_result = await client.call_tool(
+            "get_exchanges_list",
+            {
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN",  # optional override
+            }
+        )
+        print("Exchanges List:\n", exchanges_result)
+
+        # --- Get tickers for an exchange (US unified) ---
+        us_tickers = await client.call_tool(
+            "get_exchange_tickers",
+            {
+                "exchange_code": "US",
+                "fmt": "json",
+                # "type": "stock",          # optional filter
+                # "delisted": True,         # include delisted
+                # "api_token": "YOUR_TOKEN"
+            }
+        )
+        print("US Tickers (sample):\n", us_tickers)
+
+        # --- Get tickers for WAR exchange (example) with type filter ---
+        war_tickers = await client.call_tool(
+            "get_exchange_tickers",
+            {
+                "exchange_code": "WAR",
+                "type": "stock",
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN"
+            }
+        )
+        print("WAR Tickers (stock):\n", war_tickers)
+
 
 
 
