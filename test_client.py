@@ -178,6 +178,28 @@ async def main():
         )
         print("WAR Tickers (stock):\n", war_tickers)
 
+        # --- Macro Indicators: default indicator (GDP current USD) for USA ---
+        macro_gdp = await client.call_tool(
+            "get_macro_indicator",
+            {
+                "country": "USA",
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN",  # optional override
+            }
+        )
+        print("Macro (USA, default gdp_current_usd):\n", macro_gdp)
+
+        # --- Macro Indicators: inflation consumer prices annual for France ---
+        macro_infl_fr = await client.call_tool(
+            "get_macro_indicator",
+            {
+                "country": "FRA",
+                "indicator": "inflation_consumer_prices_annual",
+                "fmt": "json",
+            }
+        )
+        print("Macro (FRA, inflation_consumer_prices_annual):\n", macro_infl_fr)
+
 
 
 

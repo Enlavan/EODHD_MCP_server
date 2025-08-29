@@ -6,6 +6,7 @@ from .get_sentiment_data import register as register_sentiment_data
 from .get_news_word_weights import register as register_news_word_weights
 from .get_exchanges_list import register as register_exchanges_list
 from .get_exchange_tickers import register as register_exchange_tickers
+from .get_macro_indicator import register as register_macro_indicator
 
 from .get_income_statements import register as register_income_statements
 from .get_balance_sheets import register as register_balance_sheets
@@ -25,6 +26,7 @@ def register_all(mcp):
     register_news_word_weights(mcp)
     register_exchanges_list(mcp)
     register_exchange_tickers(mcp)
+    register_macro_indicator(mcp)
 
     register_income_statements(mcp)
     register_balance_sheets(mcp)
