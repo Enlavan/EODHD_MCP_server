@@ -7,13 +7,15 @@ from .get_news_word_weights import register as register_news_word_weights
 from .get_exchanges_list import register as register_exchanges_list
 from .get_exchange_tickers import register as register_exchange_tickers
 from .get_macro_indicator import register as register_macro_indicator
+from .get_stocks_from_search import register as register_stocks_from_search
 
+from .get_user_details import register as register_user_details
 from .get_income_statements import register as register_income_statements
 from .get_balance_sheets import register as register_balance_sheets
 from .get_cash_flow_statements import register as register_cash_flow_statements
 from .get_current_stock_price import register as register_current_stock_price
 
-from .get_stocks_from_search import register as register_stocks_from_search
+
 
 
 
@@ -27,6 +29,7 @@ def register_all(mcp):
     register_exchanges_list(mcp)
     register_exchange_tickers(mcp)
     register_macro_indicator(mcp)
+    register_user_details(mcp)
 
     register_income_statements(mcp)
     register_balance_sheets(mcp)

@@ -200,6 +200,16 @@ async def main():
         )
         print("Macro (FRA, inflation_consumer_prices_annual):\n", macro_infl_fr)
 
+        # --- User details using API token (EODHD_API_KEY) ---
+        user_details = await client.call_tool(
+            "get_user_details",
+            {
+                # Replace with a real token if you want to override the env one:
+                # "api_token": "YOUR_REAL_API_TOKEN"
+            }
+        )
+        print("User (token):\n", user_details)
+
 
 
 
