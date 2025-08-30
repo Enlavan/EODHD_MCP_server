@@ -245,6 +245,19 @@ async def main():
         )
         print("Symbol Change History:\n", symchg)
 
+        # --- Historical Market Cap: AAPL demo window (weekly points) ---
+        mcap_result = await client.call_tool(
+            "get_historical_market_cap",
+            {
+                "ticker": "AAPL.US",
+                "start_date": "2025-03-01",
+                "end_date": "2025-04-01",
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN",  # optional override; demo works for AAPL.US
+            }
+        )
+        print("Historical Market Cap:\n", mcap_result)
+
 
 
 
