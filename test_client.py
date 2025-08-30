@@ -210,6 +210,29 @@ async def main():
         )
         print("User (token):\n", user_details)
 
+        # --- Exchange details: US (with holidays default window) ---
+        us_details = await client.call_tool(
+            "get_exchange_details",
+            {
+                "exchange_code": "US",
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN",  # optional override
+            }
+        )
+        print("Exchange Details (US):\n", us_details)
+
+        # --- Exchange details: US (with explicit holidays range) ---
+        us_details_window = await client.call_tool(
+            "get_exchange_details",
+            {
+                "exchange_code": "US",
+                "start_date": "2023-04-01",  # maps to from=
+                "end_date": "2024-02-28",  # maps to to=
+                "fmt": "json",
+            }
+        )
+        print("Exchange Details (US, with date window):\n", us_details_window)
+
 
 
 

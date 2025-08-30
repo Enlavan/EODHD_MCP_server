@@ -9,6 +9,7 @@ from .get_exchange_tickers import register as register_exchange_tickers
 from .get_macro_indicator import register as register_macro_indicator
 from .get_stocks_from_search import register as register_stocks_from_search
 from .get_user_details import register as register_user_details
+from .get_exchange_details import register as register_exchange_details
 
 from .get_income_statements import register as register_income_statements
 from .get_balance_sheets import register as register_balance_sheets
@@ -28,6 +29,8 @@ def register_all(mcp):
     register_macro_indicator(mcp)
     register_user_details(mcp)
     register_stocks_from_search(mcp)
+    register_exchange_details(mcp)
+
 
     register_income_statements(mcp)
     register_balance_sheets(mcp)
