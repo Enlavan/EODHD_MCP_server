@@ -233,6 +233,18 @@ async def main():
         )
         print("Exchange Details (US, with date window):\n", us_details_window)
 
+        # --- Symbol Change History (US-only): Oct 1–Nov 1, 2022 (docs example) ---
+        symchg = await client.call_tool(
+            "get_symbol_change_history",
+            {
+                "start_date": "2022-10-01",  # maps to from=
+                "end_date": "2022-11-01",  # maps to to=
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN",  # optional override; otherwise uses env EODHD_API_KEY
+            }
+        )
+        print("Symbol Change History:\n", symchg)
+
 
 
 
