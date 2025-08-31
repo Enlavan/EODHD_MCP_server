@@ -258,8 +258,31 @@ async def main():
         )
         print("Historical Market Cap:\n", mcap_result)
 
+        # --- Insider Transactions: general window (docs-like example dates) ---
+        insiders_all = await client.call_tool(
+            "get_insider_transactions",
+            {
+                "start_date": "2024-03-01",
+                "end_date": "2024-03-02",
+                "limit": 20,
+                "fmt": "json",
+                # "api_token": "YOUR_TOKEN",  # optional override
+            }
+        )
+        print("Insider Transactions (general):\n", insiders_all)
 
-
+        # --- Insider Transactions: filtered for AAPL with a limit ---
+        insiders_aapl = await client.call_tool(
+            "get_insider_transactions",
+            {
+                "symbol": "AAPL.US",  # maps to code=AAPL.US (or just "AAPL")
+                "start_date": "2024-03-01",
+                "end_date": "2024-03-15",
+                "limit": 10,
+                "fmt": "json",
+            }
+        )
+        print("Insider Transactions (AAPL):\n", insiders_aapl)
 
 
 if __name__ == "__main__":
