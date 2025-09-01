@@ -13,6 +13,11 @@ from .get_exchange_details import register as register_exchange_details
 from .get_symbol_change_history import register as register_symbol_change_history
 from .get_historical_market_cap import register as register_historical_market_cap
 from .get_insider_transactions import register as register_insider_transactions
+from .capture_realtime_ws import register as register_capture_realtime_ws
+from .get_us_tick_data import register as register_us_tick_data
+from .get_mp_us_options_contracts import register as register_mp_us_options_contracts
+from .get_mp_us_options_eod import register as register_mp_us_options_eod
+from .get_mp_us_options_underlyings import register as register_mp_us_options_underlyings
 
 from .get_income_statements import register as register_income_statements
 from .get_balance_sheets import register as register_balance_sheets
@@ -36,6 +41,11 @@ def register_all(mcp):
     register_symbol_change_history(mcp)
     register_historical_market_cap(mcp)
     register_insider_transactions(mcp)
+    register_capture_realtime_ws(mcp)
+    register_us_tick_data(mcp)
+    register_mp_us_options_contracts(mcp)
+    register_mp_us_options_eod(mcp)
+    register_mp_us_options_underlyings(mcp)
 
     register_income_statements(mcp)
     register_balance_sheets(mcp)

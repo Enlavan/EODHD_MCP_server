@@ -238,3 +238,144 @@ def register(add_test, COMMON):
             "limit": 10,
         },
     })
+
+    # --- WebSockets: US trades (AAPL, MSFT, TSLA) ---
+    add_test({
+        "name": "WS: US trades AAPL,MSFT,TSLA (demo)",
+        "tool": "capture_realtime_ws",
+        "use_common": [],  # no COMMON merge needed
+        "params": {
+            "feed": "us_trades",
+            "symbols": ["AAPL", "MSFT", "TSLA"],  # demo supports these
+            "duration_seconds": 4,
+            "api_token": "demo",
+            # "max_messages": 200,  # optional safety cap
+        },
+    })
+
+    # --- WebSockets: Crypto (ETH-USD, BTC-USD) ---
+    add_test({
+        "name": "WS: Crypto ETH-USD,BTC-USD (demo)",
+        "tool": "capture_realtime_ws",
+        "use_common": [],
+        "params": {
+            "feed": "crypto",
+            "symbols": ["ETH-USD", "BTC-USD"],
+            "duration_seconds": 4,
+            "api_token": "demo",
+        },
+    })
+
+    # --- WebSockets: Forex (EURUSD) ---
+    add_test({
+        "name": "WS: Forex EURUSD (demo)",
+        "tool": "capture_realtime_ws",
+        "use_common": [],
+        "params": {
+            "feed": "forex",
+            "symbols": "EURUSD",
+            "duration_seconds": 4,
+            "api_token": "demo",
+        },
+    })
+
+    # --- US Tick Data: AAPL sample window (docs example times) ---
+    add_test({
+        "name": "US Ticks: AAPL 2023-09-11 18:00 → 2023-09-12 18:00 (limit 5)",
+        "tool": "get_us_tick_data",
+        "use_common": ["fmt"],  # token via env or override in params
+        "params": {
+            "ticker": "AAPL",  # or "AAPL.US"
+            "from_timestamp": 1694455200,  # 2023-09-11 18:00:00 UTC
+            "to_timestamp": 1694541600,  # 2023-09-12 18:00:00 UTC
+            "limit": 5,
+            # "api_token": "demo",         # optional; env EODHD_API_KEY otherwise
+        },
+    })
+
+    # Optional: another quick tick sample (TSLA) if you have a paid token
+    add_test({
+        "name": "US Ticks: TSLA short window (limit 5)",
+        "tool": "get_us_tick_data",
+        "use_common": ["fmt"],
+        "params": {
+            "ticker": "TSLA",
+            "from_timestamp": 1694455200,
+            "to_timestamp": 1694462400,  # +2h
+            "limit": 5,
+            # "api_token": "YOUR_TOKEN",
+        },
+    })
+
+    # 1) OPTIONS: Get contracts — narrow filter, fields subset, limit 5
+    add_test({
+        "name": "Options: contracts (AAPL, strike=450 put, exp=2027-01-15, fields subset, limit=5)",
+        "tool": "get_us_options_contracts",
+        "use_common": [],  # token from env or override below
+        "params": {
+            "underlying_symbol": "AAPL",
+            "strike_eq": 450,
+            "type": "put",
+            "exp_date_eq": "2027-01-15",
+            "fields": ["contract", "bid_date", "open", "high", "low", "last"],
+            "page_limit": 5,
+            "sort": "-exp_date",
+            # "api_token": "demo",  # demo works for AAPL
+        },
+    })
+
+    # Broader contracts query to exercise pagination/meta/links
+    add_test({
+        "name": "Options: contracts (AAPL, limit=4)",
+        "tool": "get_us_options_contracts",
+        "use_common": [],
+        "params": {
+            "underlying_symbol": "AAPL",
+            "page_limit": 4,
+            # "api_token": "demo",
+        },
+    })
+
+    # 2) OPTIONS EOD: by contract with field subset, limit=5, compact off
+    add_test({
+        "name": "Options: EOD (AAPL270115P00450000, fields subset, limit=5, compact=0)",
+        "tool": "get_us_options_eod",
+        "use_common": [],
+        "params": {
+            "contract": "AAPL270115P00450000",
+            "strike_eq": 450,
+            "type": "put",
+            "exp_date_eq": "2027-01-15",
+            "fields": ["contract", "bid_date", "open", "high", "low", "last"],
+            "page_limit": 5,
+            "sort": "-exp_date",
+            "compact": False,
+            # "api_token": "demo",
+        },
+    })
+
+    # OPTIONS EOD: minimal filter by contract only, default fields, limit=5
+    add_test({
+        "name": "Options: EOD (contract only, limit=5)",
+        "tool": "get_us_options_eod",
+        "use_common": [],
+        "params": {
+            "contract": "AAPL270115P00450000",
+            "page_limit": 5,
+            # "api_token": "demo",
+        },
+    })
+
+    # 3) OPTIONS: underlying symbols list
+    add_test({
+        "name": "Options: underlying symbols list",
+        "tool": "get_us_options_underlyings",
+        "use_common": [],
+        "params": {
+            # You can add page_offset/page_limit if you want smaller page sizes:
+             "page_limit": 50,
+            # "api_token": "demo",
+        },
+    })
+
+
