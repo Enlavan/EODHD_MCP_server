@@ -7,9 +7,9 @@ def register(add_test, COMMON):
     add_test({
         "name": "EOD: AAPL Jan-Feb 2023",
         "tool": "get_historical_stock_prices",
-        "use_common": ["api_token", "fmt", "start_date", "end_date"],
+        "use_common": ["api_token", "fmt", "start_date", "end_date", "ticker"],
         "params": {
-            "ticker": "AAPL.US",
+            #"ticker": "AAPL.US",
 
         },
     })
@@ -18,20 +18,20 @@ def register(add_test, COMMON):
     add_test({
         "name": "Live: AAPL + extras",
         "tool": "get_live_price_data",
-        "use_common": ["fmt"],  # token optional; env works
+        "use_common": ["fmt", "api_token", "ticker"],  # token optional; env works
         "params": {
-            "ticker": "AAPL.US",
+            #"ticker": "AAPL.US",
             "additional_symbols": ["VTI", "EUR.FOREX"],
         },
     })
 
     # --- Intraday ---
     add_test({
-        "name": "Intraday: AAPL 1m range",
+        "name": "Intraday: 1m range",
         "tool": "get_intraday_historical_data",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token", "ticker"],
         "params": {
-            "ticker": "AAPL.US",
+            #"ticker": "AAPL.US",
             "interval": "1m",
             "from_timestamp": 1627896900,  # 2021-08-02 09:35:00 UTC
             "to_timestamp": 1628069700,    # 2021-08-04 09:35:00 UTC
@@ -43,7 +43,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "News: by ticker AAPL",
         "tool": "get_company_news",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "ticker": "AAPL.US",
             "limit": 5,
@@ -55,7 +55,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "News: by tag AI",
         "tool": "get_company_news",
-        "use_common": ["fmt", "api_token", "limit", "offset", "api_token"],
+        "use_common": ["fmt", "api_token", "limit", "offset"],
         "params": {
             "tag": "ARTIFICIAL INTELLIGENCE",
 
@@ -66,7 +66,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Sentiment: BTC + AAPL Q1 2022",
         "tool": "get_sentiment_data",
-        "use_common": ["fmt", "start_date", "end_date"],
+        "use_common": ["fmt", "start_date", "end_date", "api_token"],
         "params": {
             "symbols": "BTC-USD.CC,AAPL.US",
 
@@ -77,7 +77,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "News Word Weights: AAPL top 10 words",
         "tool": "get_news_word_weights",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "ticker": "AAPL.US",
             "start_date": "2025-04-08",
@@ -90,34 +90,34 @@ def register(add_test, COMMON):
     add_test({
         "name": "Search: by ticker",
         "tool": "get_stocks_from_search",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "query": "AAPL",
             "limit": 10,
-            "api_token": "demo",  # NOTE: Demo won't work for Search API in prod; override as needed
+            #"api_token": "demo",  # NOTE: Demo won't work for Search API in prod; override as needed
         },
     })
     add_test({
         "name": "Search: by name (filtered US stock)",
         "tool": "get_stocks_from_search",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "query": "Apple Inc",
             "limit": 5,
             "exchange": "US",
             "type": "stock",
-            "api_token": "demo",  # replace with real token
+           # "api_token": "demo",  # replace with real token
         },
     })
     add_test({
         "name": "Search: bonds-only ISIN",
         "tool": "get_stocks_from_search",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "query": "US0378331005",
             "limit": 3,
             "bonds_only": True,
-            "api_token": "demo",  # replace with real token
+            #"api_token": "demo",  # replace with real token
         },
     })
 
@@ -125,13 +125,13 @@ def register(add_test, COMMON):
     add_test({
         "name": "Exchanges: list",
         "tool": "get_exchanges_list",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {},
     })
     add_test({
         "name": "Exchange tickers: US unified",
         "tool": "get_exchange_tickers",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "exchange_code": "US",
         },
@@ -139,7 +139,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Exchange tickers: WAR stock",
         "tool": "get_exchange_tickers",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "exchange_code": "WAR",
             "type": "stock",
@@ -148,7 +148,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Exchange details: US (default window)",
         "tool": "get_exchange_details",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "exchange_code": "US",
         },
@@ -156,7 +156,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Exchange details: US (explicit window)",
         "tool": "get_exchange_details",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "exchange_code": "US",
             "start_date": "2023-04-01",
@@ -168,7 +168,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Macro: USA default (gdp_current_usd)",
         "tool": "get_macro_indicator",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "country": "USA",
         },
@@ -176,7 +176,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Macro: FRA inflation_consumer_prices_annual",
         "tool": "get_macro_indicator",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "country": "FRA",
             "indicator": "inflation_consumer_prices_annual",
@@ -187,7 +187,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "User details (env or override token)",
         "tool": "get_user_details",
-        "use_common": [],  # token taken from env by default
+        "use_common": ["api_token"],  # token taken from env by default
         "params": {
             # "api_token": "YOUR_REAL_API_TOKEN",
         },
@@ -197,7 +197,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Symbol Change History: Oct–Nov 2022",
         "tool": "get_symbol_change_history",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "start_date": "2022-10-01",
             "end_date": "2022-11-01",
@@ -208,7 +208,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Historical Market Cap: AAPL weekly (demo window)",
         "tool": "get_historical_market_cap",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "ticker": "AAPL.US",
             "start_date": "2025-03-01",
@@ -220,7 +220,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Insider Transactions: general window",
         "tool": "get_insider_transactions",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "start_date": "2024-03-01",
             "end_date": "2024-03-02",
@@ -230,7 +230,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Insider Transactions: AAPL filter",
         "tool": "get_insider_transactions",
-        "use_common": ["fmt"],
+        "use_common": ["fmt", "api_token"],
         "params": {
             "symbol": "AAPL.US",
             "start_date": "2024-03-01",
