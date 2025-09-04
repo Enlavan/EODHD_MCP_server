@@ -378,4 +378,61 @@ def register(add_test, COMMON):
         },
     })
 
+    # Economic Events: US, 2025-01-05 to 2025-01-06 (docs-like example), large limit
+    add_test({
+        "name": "Economic Events: US window (2025-01-05..2025-01-06, limit=1000)",
+        "tool": "get_economic_events",
+        "use_common": ["fmt"],  # use COMMON defaults for fmt/json if you defined them
+        "params": {
+            "start_date": "2025-01-05",
+            "end_date": "2025-01-06",
+            "country": "US",
+            "limit": 1000,
+            # "api_token": "YOUR_TOKEN",  # or rely on env EODHD_API_KEY
+        },
+    })
+
+    # Economic Events: filter by comparison + type (illustrative)
+    add_test({
+        "name": "Economic Events: comparison=mom + type='Factory Orders'",
+        "tool": "get_economic_events",
+        "use_common": ["fmt"],
+        "params": {
+            "start_date": "2025-01-05",
+            "end_date": "2025-01-06",
+            "country": "US",
+            "comparison": "mom",
+            "type": "Factory Orders",
+            "limit": 200,
+        },
+    })
+
+    # Earnings by date window (docs-style example)
+    add_test({
+        "name": "Upcoming Earnings: window 2018-12-02..2018-12-03 (json)",
+        "tool": "get_upcoming_earnings",
+        "use_common": ["fmt"],  # will default to json if COMMON sets it
+        "params": {
+            "start_date": "2018-12-02",
+            "end_date": "2018-12-03",
+            "fmt": "json",
+            # "api_token": "YOUR_TOKEN",  # or rely on env EODHD_API_KEY
+        },
+    })
+
+    # Earnings for specific symbols (AAPL.US, MSFT.US, AI.PA) — from/to ignored by API when symbols present
+    add_test({
+        "name": "Upcoming Earnings: symbols AAPL.US,MSFT.US,AI.PA (json)",
+        "tool": "get_upcoming_earnings",
+        "use_common": ["fmt"],
+        "params": {
+            "symbols": ["AAPL.US", "MSFT.US", "AI.PA"],
+            "start_date": "2018-01-01",  # will be ignored by API when symbols present
+            "end_date": "2018-04-04",  # will be ignored by API when symbols present
+            "fmt": "json",
+        },
+    })
+
+
+
 

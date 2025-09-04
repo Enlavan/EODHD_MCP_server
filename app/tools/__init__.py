@@ -18,6 +18,8 @@ from .get_us_tick_data import register as register_us_tick_data
 from .get_mp_us_options_contracts import register as register_mp_us_options_contracts
 from .get_mp_us_options_eod import register as register_mp_us_options_eod
 from .get_mp_us_options_underlyings import register as register_mp_us_options_underlyings
+from .get_economic_events import register as register_economic_events
+from .get_upcoming_earnings import register as register_upcoming_earnings
 
 from .get_income_statements import register as register_income_statements
 from .get_balance_sheets import register as register_balance_sheets
@@ -43,6 +45,9 @@ def register_all(mcp):
     register_insider_transactions(mcp)
     register_capture_realtime_ws(mcp)
     register_us_tick_data(mcp)
+    register_economic_events(mcp)
+    register_upcoming_earnings(mcp)
+
     register_mp_us_options_contracts(mcp)
     register_mp_us_options_eod(mcp)
     register_mp_us_options_underlyings(mcp)
