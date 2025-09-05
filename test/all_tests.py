@@ -432,7 +432,25 @@ def register(add_test, COMMON):
             "fmt": "json",
         },
     })
+    # --- Earnings Trends: single symbol (AAPL.US) ---
+    add_test({
+        "name": "Earnings Trends: AAPL.US",
+        "tool": "get_earnings_trends",
+        "use_common": ["fmt"],  # COMMON["fmt"] typically "json"
+        "params": {
+            "symbols": "AAPL.US",
+            "fmt": "json",
+            # "api_token": "YOUR_TOKEN",  # optional; default env EODHD_API_KEY
+        },
+    })
 
-
-
-
+    # --- Earnings Trends: multiple symbols (AAPL.US, MSFT.US, AI.PA) ---
+    add_test({
+        "name": "Earnings Trends: AAPL.US,MSFT.US,AI.PA",
+        "tool": "get_earnings_trends",
+        "use_common": ["fmt"],
+        "params": {
+            "symbols": ["AAPL.US", "MSFT.US", "AI.PA"],
+            "fmt": "json",
+        },
+    })
