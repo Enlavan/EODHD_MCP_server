@@ -21,6 +21,10 @@ from .get_mp_us_options_underlyings import register as register_mp_us_options_un
 from .get_economic_events import register as register_economic_events
 from .get_upcoming_earnings import register as register_upcoming_earnings
 from .get_earnings_trends import register as register_earnings_trends
+from .get_upcoming_ipos import register as register_upcoming_ipos
+from .get_upcoming_splits import register as register_upcoming_splits
+from .mp_indices_list import register as register_mp_indices_list
+from .mp_index_components import register as register_mp_index_components
 
 from .get_income_statements import register as register_income_statements
 from .get_balance_sheets import register as register_balance_sheets
@@ -49,10 +53,14 @@ def register_all(mcp):
     register_economic_events(mcp)
     register_upcoming_earnings(mcp)
     register_earnings_trends(mcp)
+    register_upcoming_ipos(mcp)
+    register_upcoming_splits(mcp)
 
     register_mp_us_options_contracts(mcp)
     register_mp_us_options_eod(mcp)
     register_mp_us_options_underlyings(mcp)
+    register_mp_indices_list(mcp)
+    register_mp_index_components(mcp)
 
     register_income_statements(mcp)
     register_balance_sheets(mcp)

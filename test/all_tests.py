@@ -454,3 +454,98 @@ def register(add_test, COMMON):
             "fmt": "json",
         },
     })
+    # --- Upcoming IPOs: windowed, JSON ---
+    add_test({
+        "name": "Upcoming IPOs: 2018-12-02..2018-12-06 (JSON)",
+        "tool": "get_upcoming_ipos",
+        "use_common": [],  # you can add "fmt" to COMMON and then include it here
+        "params": {
+            "from_date": "2018-12-02",
+            "to_date": "2018-12-06",
+            "fmt": "json",
+            # "api_token": "YOUR_TOKEN",  # optional, else env EODHD_API_KEY
+        },
+    })
+
+    # --- Upcoming IPOs: default server window (today..+7) ---
+    add_test({
+        "name": "Upcoming IPOs: default window (server)",
+        "tool": "get_upcoming_ipos",
+        "use_common": ["fmt"],  # if COMMON["fmt"]="json"
+        "params": {
+            "fmt": "json",
+        },
+    })
+
+    # --- Upcoming IPOs: CSV sample (optional) ---
+    add_test({
+        "name": "Upcoming IPOs: CSV sample window",
+        "tool": "get_upcoming_ipos",
+        "use_common": [],
+        "params": {
+            "from_date": "2018-12-02",
+            "to_date": "2018-12-06",
+            "fmt": "csv",
+        },
+    })
+
+    # --- Upcoming Splits: explicit window, JSON ---
+    add_test({
+        "name": "Upcoming Splits: 2018-12-02..2018-12-06 (JSON)",
+        "tool": "get_upcoming_splits",
+        "use_common": [],  # or ["fmt"] if COMMON["fmt"]="json"
+        "params": {
+            "from_date": "2018-12-02",
+            "to_date": "2018-12-06",
+            "fmt": "json",
+            # "api_token": "YOUR_TOKEN",  # optional; else env EODHD_API_KEY
+        },
+    })
+
+    # --- Upcoming Splits: server default window (today..+7) ---
+    add_test({
+        "name": "Upcoming Splits: default window (server)",
+        "tool": "get_upcoming_splits",
+        "use_common": ["fmt"],  # if COMMON["fmt"]="json"
+        "params": {
+            "fmt": "json",
+        },
+    })
+
+    # --- Upcoming Splits: CSV sample ---
+    add_test({
+        "name": "Upcoming Splits: CSV (2018-12-02..2018-12-06)",
+        "tool": "get_upcoming_splits",
+        "use_common": [],
+        "params": {
+            "from_date": "2018-12-02",
+            "to_date": "2018-12-06",
+            "fmt": "csv",
+        },
+    })
+    # --- mp_indices_list: happy path JSON ---
+    add_test({
+        "name": "MP Indices List: JSON basics",
+        "tool": "mp_indices_list",
+        "use_common": ["fmt"],  # if COMMON has fmt='json'
+        "params": {
+            "fmt": "json",
+            # "api_token": "YOUR_TOKEN",  # optional; else env EODHD_API_KEY
+        },
+    })
+
+
+    # --- mp_index_components: S&P 500 (sample) ---
+    add_test({
+        "name": "MP Index Components: GSPC.INDX JSON",
+        "tool": "mp_index_components",
+        "use_common": ["fmt"],  # if COMMON has fmt='json'
+        "params": {
+            "symbol": "GSPC.INDX",
+            "fmt": "json",
+        },
+    })
+
+
+
+
