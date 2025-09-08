@@ -580,6 +580,72 @@ def register(add_test, COMMON):
         },
     })
 
+    # --- Fundamentals: Common Stock (no date pruning, full sections + financials maps) ---
+    add_test({
+        "name": "Fundamentals: stock full",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            # no from/to -> module fetches full Financials::{stmt}::{quarterly,yearly} maps
+            "include_financials": True,
+        },
+    })
+
+    # --- Fundamentals: Common Stock with from/to pruning (fetch only in-range leaves) ---
+    add_test({
+        "name": "Fundamentals: stock pruned window",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "from_date": "2023-01-01",
+            "to_date": "2024-12-31",
+            "include_financials": True,
+        },
+    })
+
+    # --- Fundamentals: ETF basic (General, Technicals, ETF_Data) ---
+    add_test({
+        "name": "Fundamentals: ETF basic",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "VTI.US",
+            # sections omitted -> module defaults to General, Technicals, ETF_Data
+        },
+    })
+
+    # --- Fundamentals: Mutual Fund basic (General, MutualFund_Data) ---
+    add_test({
+        "name": "Fundamentals: Fund basic",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "SWPPX.US",
+            # sections omitted -> module defaults to General, MutualFund_Data
+        },
+    })
+
+    # --- Fundamentals: Index with historical snapshots and bounded window (pass-through extra_params) ---
+    add_test({
+        "name": "Fundamentals: Index historical window",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "GSPC.INDX",
+            "extra_params": {
+                "historical": 1,
+                "from": "2020-01-01",
+                "to": "2023-01-01",
+            },
+            # sections omitted -> defaults to General (HistoricalComponents controlled by extra_params on server)
+        },
+    })
+
+
+
+
 
 
 

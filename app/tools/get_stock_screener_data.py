@@ -59,6 +59,7 @@ def register(mcp: FastMCP):
         sort: Optional[str] = None,             # e.g. "market_capitalization.desc"
         limit: int = 50,                         # 1..100
         offset: int = 0,                         # 0..999
+        fmt: Optional[str] = None,               # NEW: accept fmt to avoid validation errors
         api_token: Optional[str] = None,         # per-call override (else env)
     ) -> str:
         """
@@ -68,18 +69,18 @@ def register(mcp: FastMCP):
         Each request consumes 5 API calls.
 
         Args:
-          - filters: list-of-lists or JSON string, e.g.
-              [["market_capitalization", ">", 1_000_000_000], ["sector", "=", "Technology"]]
-            String fields support '=' and 'match'. Numeric fields support '=', '>', '<', '>=', '<='.
-          - signals: list[str] or comma-separated string, e.g. ["bookvalue_neg","200d_new_lo"]
-          - sort: "field.asc" | "field.desc" for numeric fields
-          - limit: 1..100 (default 50)
-          - offset: 0..999 (default 0)
-          - api_token: optional override; otherwise appended by make_request
-
-        Response:
-          Pretty-printed JSON string with {"data":[...]} or {"error":"..."} on failure.
+          - filters: list-of-lists or JSON string
+          - signals: list[str] or comma-separated string
+          - sort: "field.asc" | "field.desc"
+          - limit: 1..100
+          - offset: 0..999
+          - fmt: optional; Screener is JSON-only. If provided, must be "json".
+          - api_token: optional override
         """
+
+        # --- fmt handling (for compatibility with callers passing fmt) ---
+        if fmt is not None and fmt.lower() != "json":
+            return _err("The Screener endpoint returns JSON only. Use fmt='json' or omit this parameter.")
 
         # Validate pagination bounds
         if not (1 <= int(limit) <= 100):
@@ -101,19 +102,19 @@ def register(mcp: FastMCP):
             url += _q("sort", sort)
         url += _q("limit", str(limit))
         url += _q("offset", str(offset))
-
         if filt_str:
-            url += _q("filters", filt_str)  # url-encoded JSON
+            url += _q("filters", filt_str)
         if sig_str:
             url += _q("signals", sig_str)
 
+        # (We deliberately do NOT append fmt, since the endpoint is JSON-only.)
+
         if api_token:
-            url += _q("api_token", api_token)  # otherwise added by make_request
+            url += _q("api_token", api_token)
 
         data = await make_request(url)
         if data is None:
             return _err("No response from API.")
-        # Ensure consistent pretty JSON output
         try:
             return json.dumps(data, indent=2)
         except Exception:
