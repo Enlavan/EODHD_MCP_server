@@ -3,27 +3,6 @@
 # and add them to TEST_MODULES in test_client.py.
 
 def register(add_test, COMMON):
-    # --- End of Day API ---
-    add_test({
-        "name": "EOD: AAPL Jan-Feb 2023",
-        "tool": "get_historical_stock_prices",
-        "use_common": ["api_token", "fmt", "start_date", "end_date", "ticker"],
-        "params": {
-            #"ticker": "AAPL.US",
-
-        },
-    })
-
-    # --- Live (Delayed) ---
-    add_test({
-        "name": "Live: AAPL + extras",
-        "tool": "get_live_price_data",
-        "use_common": ["fmt", "api_token", "ticker"],  # token optional; env works
-        "params": {
-            #"ticker": "AAPL.US",
-            "additional_symbols": ["VTI", "EUR.FOREX"],
-        },
-    })
 
     # --- Intraday ---
     add_test({
@@ -36,6 +15,115 @@ def register(add_test, COMMON):
             "from_timestamp": 1627896900,  # 2021-08-02 09:35:00 UTC
             "to_timestamp": 1628069700,    # 2021-08-04 09:35:00 UTC
             "split_dt": False,
+        },
+    })
+
+    # --- Intraday: near-max ranges with mixed date formats ---
+
+    # 1) 1m — ~119 days (max is 120) using Unix timestamps
+    add_test({
+        "name": "Intraday: 1m near-max (timestamps)",
+        "tool": "get_intraday_historical_data",
+        "use_common": ["fmt", "api_token", "ticker"],
+        "params": {
+            # 2021-01-01 00:00:00 UTC -> 2021-04-30 00:00:00 UTC  (119 days)
+            "interval": "1m",
+            "from_timestamp": 1609459200,  # 2021-01-01
+            "to_timestamp": 1619740800,  # 2021-04-30
+            "split_dt": False,
+        },
+    })
+
+
+    # 2) 5m — 599 days (max is 600) using DD-MM-YYYY
+    add_test({
+        "name": "Intraday: 5m near-max (DD-MM-YYYY)",
+        "tool": "get_intraday_historical_data",
+        "use_common": ["fmt", "api_token", "ticker"],
+        "params": {
+            # 01-01-2020 -> 22-08-2021 (599 days)
+            "interval": "5m",
+            "from_timestamp": "01-01-2020",
+            "to_timestamp": "22-08-2021",
+            "split_dt": True,
+        },
+    })
+
+    # 3) 5m — 599 days (max is 600) using YYYY/MM/DD
+    add_test({
+        "name": "Intraday: 5m near-max (YYYY/MM/DD)",
+        "tool": "get_intraday_historical_data",
+        "use_common": ["fmt", "api_token", "ticker"],
+        "params": {
+            # 2020/01/01 -> 2021/08/22 (599 days)
+            "interval": "5m",
+            "from_timestamp": "2020/01/01",
+            "to_timestamp": "2021/08/22",
+            "split_dt": False,
+        },
+    })
+
+    # 4) 1h — 7199 days (max is 7200) using mixed natural + ISO-8601
+    add_test({
+        "name": "Intraday: 1h near-max (natural + ISO8601)",
+        "tool": "get_intraday_historical_data",
+        "use_common": ["fmt", "api_token", "ticker"],
+        "params": {
+            # "Jan 1, 2010" -> "2029-09-17T00:00:00Z" (7199 days)
+            "interval": "1h",
+            "from_timestamp": "Jan 1, 2010",
+            "to_timestamp": "2029-09-17T00:00:00Z",
+            "split_dt": False,
+        },
+    })
+
+    # --- Intraday: 1m near-max, DD-MM-YYYY date strings (≈119 days < 120 max) ---
+    add_test({
+        "name": "Intraday: 1m near-max (DD-MM-YYYY)",
+        "tool": "get_intraday_historical_data",
+        "use_common": ["fmt", "api_token", "ticker"],
+        "params": {
+            # "ticker": "AAPL.US",
+            "interval": "1m",
+            "from_timestamp": "01-11-2024",  # DD-MM-YYYY
+            "to_timestamp": "28-02-2025",  # DD-MM-YYYY
+            "split_dt": False,
+        },
+    })
+
+    # --- Intraday: 1h near-max, DD-MM-YYYY date strings (7199 days < 7200 max) ---
+    add_test({
+        "name": "Intraday: 1h near-max (DD-MM-YYYY)",
+        "tool": "get_intraday_historical_data",
+        "use_common": ["fmt", "api_token", "ticker"],
+        "params": {
+            # "ticker": "AAPL.US",
+            "interval": "1h",
+            "from_timestamp": "01-01-2010",  # DD-MM-YYYY
+            "to_timestamp": "17-09-2029",  # DD-MM-YYYY
+            "split_dt": False,
+        },
+    })
+
+    # --- End of Day API ---
+    add_test({
+        "name": "EOD: AAPL Jan-Feb 2023",
+        "tool": "get_historical_stock_prices",
+        "use_common": ["api_token", "fmt", "start_date", "end_date", "ticker"],
+        "params": {
+            # "ticker": "AAPL.US",
+
+        },
+    })
+
+    # --- Live (Delayed) ---
+    add_test({
+        "name": "Live: AAPL + extras",
+        "tool": "get_live_price_data",
+        "use_common": ["fmt", "api_token", "ticker"],  # token optional; env works
+        "params": {
+            # "ticker": "AAPL.US",
+            "additional_symbols": ["VTI", "EUR.FOREX"],
         },
     })
 
@@ -94,7 +182,7 @@ def register(add_test, COMMON):
         "params": {
             "query": "AAPL",
             "limit": 10,
-            #"api_token": "demo",  # NOTE: Demo won't work for Search API in prod; override as needed
+            # "api_token": "demo",  # NOTE: Demo won't work for Search API in prod; override as needed
         },
     })
     add_test({
@@ -106,7 +194,7 @@ def register(add_test, COMMON):
             "limit": 5,
             "exchange": "US",
             "type": "stock",
-           # "api_token": "demo",  # replace with real token
+            # "api_token": "demo",  # replace with real token
         },
     })
     add_test({
@@ -117,7 +205,7 @@ def register(add_test, COMMON):
             "query": "US0378331005",
             "limit": 3,
             "bonds_only": True,
-            #"api_token": "demo",  # replace with real token
+            # "api_token": "demo",  # replace with real token
         },
     })
 
@@ -230,7 +318,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "Insider Transactions: AAPL filter",
         "tool": "get_insider_transactions",
-        "use_common": ["fmt", "api_token" ,"symbol"],
+        "use_common": ["fmt", "api_token", "symbol"],
         "params": {
             "start_date": "2024-03-01",
             "end_date": "2024-03-15",
@@ -247,7 +335,7 @@ def register(add_test, COMMON):
             "feed": "us_trades",
             "symbols": ["AAPL", "MSFT", "TSLA"],  # demo supports these
             "duration_seconds": 4,
-            #"max_messages": 200,  # optional safety cap
+            # "max_messages": 200,  # optional safety cap
         },
     })
 
@@ -279,7 +367,7 @@ def register(add_test, COMMON):
     add_test({
         "name": "US Ticks: AAPL 2023-09-11 18:00 → 2023-09-12 18:00 (limit 5)",
         "tool": "get_us_tick_data",
-        "use_common": ["fmt" , "api_token" ,  "ticker"],  # token via env or override in params
+        "use_common": ["fmt", "api_token", "ticker"],  # token via env or override in params
         "params": {
             "from_timestamp": 1694455200,  # 2023-09-11 18:00:00 UTC
             "to_timestamp": 1694541600,  # 2023-09-12 18:00:00 UTC
@@ -367,7 +455,7 @@ def register(add_test, COMMON):
         "use_common": ["api_token", "fmt"],
         "params": {
             # You can add page_offset/page_limit if you want smaller page sizes:
-             "page_limit": 50,
+            "page_limit": 50,
             # "api_token": "demo",
         },
     })
@@ -409,7 +497,7 @@ def register(add_test, COMMON):
         "params": {
             "start_date": "2018-12-02",
             "end_date": "2018-12-03",
-            #"fmt": "json",
+            # "fmt": "json",
             # "api_token": "YOUR_TOKEN",  # or rely on env EODHD_API_KEY
         },
     })
@@ -423,7 +511,7 @@ def register(add_test, COMMON):
             "symbols": ["AAPL.US", "MSFT.US", "AI.PA"],
             "start_date": "2018-01-01",  # will be ignored by API when symbols present
             "end_date": "2018-04-04",  # will be ignored by API when symbols present
-            #"fmt": "json",
+            # "fmt": "json",
         },
     })
     # --- Earnings Trends: single symbol (AAPL.US) ---
@@ -433,7 +521,7 @@ def register(add_test, COMMON):
         "use_common": ["fmt", "api_token"],  # COMMON["fmt"] typically "json"
         "params": {
             "symbols": "AAPL.US",
-            #"fmt": "json",
+            # "fmt": "json",
             # "api_token": "YOUR_TOKEN",  # optional; default env EODHD_API_KEY
         },
     })
@@ -445,7 +533,7 @@ def register(add_test, COMMON):
         "use_common": ["fmt", "api_token"],
         "params": {
             "symbols": ["AAPL.US", "MSFT.US", "AI.PA"],
-            #"fmt": "json",
+            # "fmt": "json",
         },
     })
     # --- Upcoming IPOs: windowed, JSON ---
@@ -466,7 +554,7 @@ def register(add_test, COMMON):
         "tool": "get_upcoming_ipos",
         "use_common": ["fmt", "api_token"],
         "params": {
-            #"fmt": "json",
+            # "fmt": "json",
         },
     })
 
@@ -490,7 +578,7 @@ def register(add_test, COMMON):
         "params": {
             "from_date": "2018-12-02",
             "to_date": "2018-12-06",
-           # "fmt": "json",
+            # "fmt": "json",
             # "api_token": "YOUR_TOKEN",  # optional; else env EODHD_API_KEY
         },
     })
@@ -501,7 +589,7 @@ def register(add_test, COMMON):
         "tool": "get_upcoming_splits",
         "use_common": ["fmt", "api_token"],
         "params": {
-            #"fmt": "json",
+            # "fmt": "json",
         },
     })
 
@@ -522,11 +610,10 @@ def register(add_test, COMMON):
         "tool": "mp_indices_list",
         "use_common": ["fmt", "api_token"],  # if COMMON has fmt='json'
         "params": {
-            #"fmt": "json",
+            # "fmt": "json",
             # "api_token": "YOUR_TOKEN",  # optional; else env EODHD_API_KEY
         },
     })
-
 
     # --- mp_index_components: S&P 500 (sample) ---
     add_test({
@@ -535,7 +622,7 @@ def register(add_test, COMMON):
         "use_common": ["fmt", "api_token"],  # if COMMON has fmt='json'
         "params": {
             "symbol": "GSPC.INDX",
-            #"fmt": "json",
+            # "fmt": "json",
         },
     })
 
@@ -642,6 +729,8 @@ def register(add_test, COMMON):
             # sections omitted -> defaults to General (HistoricalComponents controlled by extra_params on server)
         },
     })
+
+
 
 
 

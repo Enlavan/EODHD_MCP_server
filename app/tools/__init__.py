@@ -22,7 +22,6 @@ from .get_upcoming_earnings import register as register_upcoming_earnings
 from .get_earnings_trends import register as register_earnings_trends
 from .get_upcoming_ipos import register as register_upcoming_ipos
 from .get_upcoming_splits import register as register_upcoming_splits
-from .get_current_stock_price import register as register_current_stock_price
 from .get_fundamentals_data import register as register_fundamentals_data
 
 
@@ -60,7 +59,6 @@ def register_all(mcp):
     register_upcoming_ipos(mcp)
     register_upcoming_splits(mcp)
     register_stock_screener_data(mcp)
-    register_current_stock_price(mcp)
     register_fundamentals_data(mcp)
 
     register_mp_us_options_contracts(mcp)
