@@ -1,6 +1,6 @@
 # EODHD MCP Server
 
-**EODHD MCP Server** is a Python-based Microservice Communication Protocol (MCP) server designed to provide comprehensive access to financial and market data via the **EOD Historical Data (EODHD)** API. This MCP server enables users to easily fetch and manipulate financial datasets including fundamentals, earnings, IPOs, splits, options, indices, historical and intraday stock prices, screeners, sentiment, and more.
+**EODHD MCP Server** is a Python-based Model Context Protocol (MCP) server designed to provide comprehensive access to financial and market data via the **EOD Historical Data (EODHD)** API. This MCP server enables users to easily fetch and manipulate financial datasets including fundamentals, earnings, IPOs, splits, options, indices, historical and intraday stock prices, screeners, sentiment, and more.
 
 ## Overview
 
