@@ -583,6 +583,8 @@ def register(add_test, COMMON):
         },
     })
 
+
+
     # --- Upcoming Splits: server default window (today..+7) ---
     add_test({
         "name": "Upcoming Splits: default window (server)",
@@ -604,6 +606,42 @@ def register(add_test, COMMON):
             "fmt": "csv",
         },
     })
+
+    # --- Dividends: by symbol only (default pagination) ---
+    add_test({
+        "name": "Dividends: by symbol (AAPL.US)",
+        "tool": "get_upcoming_dividends",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "AAPL.US",
+            # fmt is provided via use_common
+        },
+    })
+
+    # --- Dividends: exact date only (no symbol) ---
+    add_test({
+        "name": "Dividends: by exact date only",
+        "tool": "get_upcoming_dividends",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "date_eq": "2024-11-08",  # example Apple dividend date from docs
+        },
+    })
+
+    # --- Dividends: date window + symbol + pagination ---
+    add_test({
+        "name": "Dividends: by symbol and date range with pagination",
+        "tool": "get_upcoming_dividends",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "AAPL.US",
+            "date_from": "2023-01-01",
+            "date_to": "2023-12-31",
+            "page_limit": 100,
+            "page_offset": 0,
+        },
+    })
+
     # --- mp_indices_list: happy path JSON ---
     add_test({
         "name": "MP Indices List: JSON basics",
@@ -729,6 +767,353 @@ def register(add_test, COMMON):
             # sections omitted -> defaults to General (HistoricalComponents controlled by extra_params on server)
         },
     })
+
+    # tests/catalog_technical_indicators.py
+
+    # --- SMA ---
+    add_test({
+        "name": "technical: SMA 30 AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "sma",
+            "start_date": "2022-08-10",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "period": 30,
+        },
+    })
+
+    # --- EMA (filter last) ---
+    add_test({
+        "name": "technical: EMA last_ema AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "ema",
+            "filter": "last_ema",
+            "order": "d",
+            "period": 50,
+        },
+    })
+
+    # --- MACD with custom periods ---
+    add_test({
+        "name": "technical: MACD custom AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "macd",
+            "start_date": "2022-08-05",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "fast_period": 13,
+            "slow_period": 26,
+            "signal_period": 12,
+        },
+    })
+
+    # --- Stochastic ---
+    add_test({
+        "name": "technical: Stochastic K/D AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "stochastic",
+            "start_date": "2022-06-01",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "fast_kperiod": 14,
+            "slow_kperiod": 5,
+            "slow_dperiod": 4,
+        },
+    })
+
+    # --- StochRSI ---
+    add_test({
+        "name": "technical: StochRSI AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "stochrsi",
+            "start_date": "2022-06-05",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "fast_kperiod": 14,
+            "fast_dperiod": 14,
+        },
+    })
+
+    # --- ATR ---
+    add_test({
+        "name": "technical: ATR 50 AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "atr",
+            "start_date": "2022-07-15",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "period": 50,
+        },
+    })
+
+    # --- SAR (acceleration/maximum) ---
+    add_test({
+        "name": "technical: SAR custom AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "sar",
+            "start_date": "2022-09-25",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "acceleration": 0.03,
+            "maximum": 0.21,
+        },
+    })
+
+    # --- Beta vs NDX.INDX ---
+    add_test({
+        "name": "technical: BETA vs NDX.INDX AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "beta",
+            "start_date": "2022-07-15",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "period": 50,
+            "code2": "NDX.INDX",
+        },
+    })
+
+    # --- Bollinger Bands ---
+    add_test({
+        "name": "technical: BBANDS 50 AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "bbands",
+            "start_date": "2022-07-15",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "period": 50,
+        },
+    })
+
+    # --- Split Adjusted (agg_period) ---
+    add_test({
+        "name": "technical: splitadjusted daily AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "splitadjusted",
+            "start_date": "2022-09-20",
+            "end_date": "2022-10-01",
+            "order": "d",
+            "agg_period": "d",
+        },
+    })
+
+    # --- AmiBroker format ---
+    add_test({
+        "name": "technical: format_amibroker AAPL.US",
+        "tool": "get_technical_indicators",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "ticker": "AAPL.US",
+            "function": "format_amibroker",
+            "start_date": "2022-09-25",
+            "end_date": "2022-10-01",
+            "order": "d",
+        },
+    })
+
+    # --- Live v2: single symbol ---
+    add_test({
+        "name": "Live v2: AAPL.US extended quote",
+        "tool": "get_us_live_extended_quotes",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbols": ["AAPL.US"],
+        },
+    })
+
+    # --- Live v2: batch with pagination params ---
+    add_test({
+        "name": "Live v2: Batch AAPL/TSLA/JPM (limit=100, offset=0)",
+        "tool": "get_us_live_extended_quotes",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbols": ["AAPL.US", "TSLA.US", "JPM.US"],
+            "page_limit": 100,
+            "page_offset": 0,
+        },
+    })
+
+    # --- Live v2: CSV output (if your make_request supports raw text passthrough) ---
+    add_test({
+        "name": "Live v2: AAPL.US extended quote CSV",
+        "tool": "get_us_live_extended_quotes",
+        "use_common": ["api_token"],  # fmt overridden below
+        "params": {
+            "symbols": ["AAPL.US"],
+            "fmt": "csv",
+        },
+    })
+
+
+    # --- illio: S&P 500 ---
+    add_test({
+        "name": "illio: Performance Insights SnP500",
+        "tool": "mp_illio_performance_insights",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "SnP500",
+        },
+    })
+
+    # --- illio: Dow 30 (accept alias) ---
+    add_test({
+        "name": "illio: Performance Insights DJI (alias: dow)",
+        "tool": "mp_illio_performance_insights",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "dow",  # alias -> DJI
+        },
+    })
+
+    # --- illio: Nasdaq-100 (accept alias) ---
+    add_test({
+        "name": "illio: Performance Insights NDX (alias: nasdaq100)",
+        "tool": "mp_illio_performance_insights",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "nasdaq100",  # alias -> NDX
+        },
+    })
+
+    # --- illio: S&P 500 ---
+    add_test({
+        "name": "illio: Risk Insights SnP500",
+        "tool": "mp_illio_risk_insights",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "SnP500",
+        },
+    })
+
+    # --- illio: Dow 30 (accept alias) ---
+    add_test({
+        "name": "illio: Risk Insights DJI (alias: dow)",
+        "tool": "mp_illio_risk_insights",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "dow",  # alias -> DJI
+        },
+    })
+
+    # --- illio: Nasdaq-100 (accept alias) ---
+    add_test({
+        "name": "illio: Risk Insights NDX (alias: nasdaq100)",
+        "tool": "mp_illio_risk_insights",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "nasdaq100",  # alias -> NDX
+        },
+    })
+
+    # --- illio: market insights SnP500---
+    add_test({
+        "name": "illio: Market Insights SnP500",
+        "tool": "get_mp_illio_market_insights_performance",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "SnP500"},
+    })
+
+    # --- illio: market insights DJI---
+    add_test({
+        "name": "illio: Market Insights DJI (alias: dow)",
+        "tool": "get_mp_illio_market_insights_performance",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "dow"},  # alias -> DJI
+    })
+
+    # --- illio: market insights NDX---
+    add_test({
+        "name": "illio: Market Insights NDX (alias: nasdaq100)",
+        "tool": "get_mp_illio_market_insights_performance",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "nasdaq100"},  # alias -> NDX
+    })
+
+    # --- illio: Best/Worst SnP500 ---
+    add_test({
+        "name": "illio: Best/Worst SnP500",
+        "tool": "get_mp_illio_market_insights_best_worst",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "SnP500"},
+    })
+
+    # --- illio: Best/Worst Dow 30 (accept alias) ---
+    add_test({
+        "name": "illio: Best/Worst DJI (alias: dow)",
+        "tool": "get_mp_illio_market_insights_best_worst",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "dow"},  # alias -> DJI
+    })
+
+    # --- illio: Best/Worst Nasdaq-100 (accept alias) ---
+    add_test({
+        "name": "illio: Best/Worst NDX (alias: nasdaq100)",
+        "tool": "get_mp_illio_market_insights_best_worst",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "nasdaq100"},  # alias -> NDX
+    })
+
+    # --- alias tool still works ---
+    add_test({
+        "name": "illio(alias): Best/Worst SnP500",
+        "tool": "mp_illio_market_insights_best_worst",
+        "use_common": ["fmt", "api_token"],
+        "params": {"id": "SnP500"},
+    })
+
+    # --- illio: Volatility Bands vs Market (Nasdaq 100 via alias) ---
+    add_test({
+        "name": "illio: Volatility Bands NDX",
+        "tool": "mp_illio_market_insights_volatility",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "NDX",
+        },
+    })
+
+    # --- illio: Volatility Bands vs Market (SnP500 via alias) ---
+    add_test({
+        "name": "illio: Volatility Bands SnP500 (alias: spx)",
+        "tool": "mp_illio_market_insights_volatility",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "spx",  # alias -> SnP500
+        },
+    })
+
+
+
+
+
 
 
 

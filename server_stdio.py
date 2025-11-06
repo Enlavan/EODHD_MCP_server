@@ -1,9 +1,5 @@
 from fastmcp import FastMCP
 from app.tools import register_all
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 mcp = FastMCP("eodhd-datasets")
 register_all(mcp)
@@ -13,7 +9,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", stream=sys.stderr)
     logger = logging.getLogger("eodhd-mcp")
     logger.info("Starting EODHD MCP HTTP Server...")
-    host = os.getenv("MCP_HOST", "127.0.0.1")
-    port = int(os.getenv("MCP_PORT", 8000))
-    mcp.run(transport="streamable-http", host=host, port=port, path="/mcp")
-    logger.info("Server stopped")
+    mcp.run(transport="stdio")  #  only if server started with --stdio key
+    logger.info("Server stopped") -modify this according to comments
