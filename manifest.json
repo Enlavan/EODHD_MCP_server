@@ -1,0 +1,20 @@
+{
+  "mcpb_version": "0.3",
+  "name": "eodhd-mcp",
+  "version": "1.0.0",
+  "description": "A simple MCP server for EODHD",
+  "author": {
+    "name": "Enlavan"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "python3",
+      "args": [
+        "${__dirname}/server.py"
+      ]
+    }
+  }
+}
+

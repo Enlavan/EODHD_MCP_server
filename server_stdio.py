@@ -9,5 +9,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", stream=sys.stderr)
     logger = logging.getLogger("eodhd-mcp")
     logger.info("Starting EODHD MCP HTTP Server...")
-    mcp.run(transport="stdio")  #  only if server started with --stdio key
-    logger.info("Server stopped") -modify this according to comments
+    mcp.run(transport="stdio")
+    logger.info("Server stopped")
