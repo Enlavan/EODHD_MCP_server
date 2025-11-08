@@ -95,7 +95,7 @@ python -m entrypoints.server_stdio --apikey YOUR_EODHD_API_KEY
     "eodhd-mcp": {
       "command": "python3",
       "args": [
-        "/home/testpoint/PycharmProjects/EODHD_MCP_server/server.py",
+        "/home/user/EODHD_MCP_server/server.py",
         "--stdio"
       ],
        "env": {
