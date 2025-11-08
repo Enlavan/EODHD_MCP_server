@@ -80,13 +80,13 @@ python -m entrypoints.server_stdio --apikey YOUR_EODHD_API_KEY
 
 ### A) Install via MCP bundle (`.mcpb`)
 
-1. Download the `.mcpb` from Releases.
+1. Download the `.mcpb` from Releases (https://github.com/Enlavan/EODHD_MCP_server/releases).
 2. Claude Desktop → **Settings → Extensions → Advanced → Install Extension**.
 3. Select the `.mcpb`, approve, enter your API key, enable the extension.
 
 ### B) Use source checkout (developer config)
 
-1. Clone this repo anywhere.
+1. Clone this repo (https://github.com/Enlavan/EODHD_MCP_server) anywhere.
 2. Claude Desktop → **Developer → Edit config**, add:
 
 ```json
@@ -95,11 +95,11 @@ python -m entrypoints.server_stdio --apikey YOUR_EODHD_API_KEY
     "eodhd-mcp": {
       "command": "python3",
       "args": [
-        "/home/user/EODHD_MCP_server/server.py",
+        "/home/user/EODHD_MCP_server/server.py", //actual path to the library
         "--stdio"
       ],
        "env": {
-           "EODHD_API_KEY": "YOUR_EODHD_API_KEY"
+           "EODHD_API_KEY": "YOUR_EODHD_API_KEY" //your valid EODHD API key
          }
     }
   }
