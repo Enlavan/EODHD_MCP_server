@@ -1110,6 +1110,69 @@ def register(add_test, COMMON):
         },
     })
 
+    # --- illio: Risk-Return SnP500 ---
+    add_test({
+        "name": "illio: Market Insights Risk-Return SnP500",
+        "tool": "get_mp_illio_market_insights_risk_return",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "SnP500",
+        },
+    })
+
+    # --- illio: Risk-Return Nasdaq-100 (alias) ---
+    add_test({
+        "name": "illio: Market Insights Risk-Return NDX (alias: nasdaq100)",
+        "tool": "get_mp_illio_market_insights_risk_return",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "nasdaq100",  # alias -> NDX
+        },
+    })
+
+    # --- illio: Largest Volatility Change SnP500 ---
+    add_test({
+        "name": "illio: Market Insights Largest Volatility Change SnP500",
+        "tool": "get_mp_illio_market_insights_largest_volatility",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "SnP500",
+        },
+    })
+
+    # --- illio: Largest Volatility Change Nasdaq-100 (alias) ---
+    add_test({
+        "name": "illio: Market Insights Largest Volatility Change NDX (alias: nasdaq100)",
+        "tool": "get_mp_illio_market_insights_largest_volatility",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "id": "nasdaq100",  # alias -> NDX
+        },
+    })
+
+    # --- illio Market Insights: Beta Bands Insight (primary tool) ---
+    add_test({
+        "name": "illio Market Insights: Beta Bands (NDX)",
+        "tool": "get_mp_illio_market_insights_beta_bands",
+        "use_common": ["api_token"],
+        "params": {
+            "id": "NDX",
+        },
+    })
+
+    # --- illio Market Insights: Beta Bands – alias tool ---
+    add_test({
+        "name": "illio Market Insights: Beta Bands via alias tool (SnP500 alias)",
+        "tool": "mp_illio_market_insights_beta_bands",
+        "use_common": ["api_token"],
+        "params": {
+            "id": "SP500",   # should normalize to canonical 'SnP500'
+        },
+    })
+
+
+
+
 
 
 

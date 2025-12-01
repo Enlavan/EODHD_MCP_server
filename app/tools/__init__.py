@@ -52,6 +52,9 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_illio_market_insights_performance",
     "get_mp_illio_market_insights_best_worst",
     "get_mp_illio_market_insights_volatility",
+    "get_mp_illio_market_insights_risk_return",
+    "get_mp_illio_market_insights_largest_volatility",
+    "get_mp_illio_market_insights_beta_bands"
 ]
 
 ALL_TOOLS: list[str] = MAIN_TOOLS + MARKETPLACE_TOOLS + THIRD_PARTY_TOOLS
