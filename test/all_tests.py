@@ -1,6 +1,6 @@
-# This module registers all your test cases in one place.
-# You can split into multiple files later (e.g. tests/eod.py, tests/news.py)
-# and add them to TEST_MODULES in test_client.py.
+# This module registers all test cases in one place.
+# It's possible to split it into multiple files later (e.g. tests/eod.py, tests/news.py)
+# and add them to TEST_MODULES in test client (test_client_http.py, test_client_sse.py etc.
 
 def register(add_test, COMMON):
 
@@ -1163,12 +1163,85 @@ def register(add_test, COMMON):
     # --- illio Market Insights: Beta Bands – alias tool ---
     add_test({
         "name": "illio Market Insights: Beta Bands via alias tool (SnP500 alias)",
-        "tool": "mp_illio_market_insights_beta_bands",
+        "tool": "get_mp_illio_market_insights_beta_bands",
         "use_common": ["api_token"],
         "params": {
             "id": "SP500",   # should normalize to canonical 'SnP500'
         },
     })
+
+    # --- Praams Risk Scoring by Ticker ---
+    add_test({
+        "name": "Praams Risk Scoring by Ticker (AAPL)",
+        "tool": "get_mp_praams_risk_scoring_by_ticker",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "AAPL",
+        },
+    })
+
+    # --- Praams Risk Scoring by ISIN ---
+    add_test({
+        "name": "Praams Risk Scoring by ISIN (US88160R1014)",
+        "tool": "get_mp_praams_risk_scoring_by_isin",
+        "use_common": ["api_token"],
+        "params": {
+            "isin": "US88160R1014",
+        },
+    })
+
+    # --- Praams Bond Analyze by ISIN ---
+    add_test({
+        "name": "Praams Bond Analyze by ISIN (US7593518852)",
+        "tool": "get_mp_praams_bond_analyze_by_isin",
+        "use_common": ["api_token"],
+        "params": {
+            "isin": "US7593518852",
+        },
+    })
+
+    # --- Praams Bank Income Statement by Ticker ---
+    add_test({
+        "name": "Praams Bank Income Statement retrieval by Ticker (JPM)",
+        "tool": "get_mp_praams_bank_income_statement_by_ticker",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "JPM",
+        },
+    })
+
+    # --- Praams Bank Income Statement by ISIN ---
+    add_test({
+        "name": "Praams Bank Income Statement retrieval by ISIN (US46625H1005)",
+        "tool": "get_mp_praams_bank_income_statement_by_isin",
+        "use_common": ["api_token"],
+        "params": {
+            "isin": "US46625H1005",
+        },
+    })
+
+    # --- Praams Bank Balance Sheet by Ticker ---
+    add_test({
+        "name": "Praams Bank Balance Sheet retrieval by Ticker (JPM)",
+        "tool": "get_mp_praams_bank_balance_sheet_by_ticker",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "JPM",
+        },
+    })
+
+    # --- Praams Bank Income Statement by ISIN ---
+    add_test({
+        "name": "Praams Bank Balance Sheet retrieval by ISIN (US46625H1005)",
+        "tool": "get_mp_praams_bank_balance_sheet_by_isin",
+        "use_common": ["api_token"],
+        "params": {
+            "isin": "US46625H1005",
+        },
+    })
+
+
+
 
 
 

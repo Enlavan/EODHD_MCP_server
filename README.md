@@ -130,7 +130,7 @@ Restart Claude Desktop. The server will be launched on demand via stdio.
 ### HTTP client test
 
 ```bash
-python test/test_client.py
+python test/test_client_http.py
 # uses http://127.0.0.1:8000/mcp by default
 ```
 

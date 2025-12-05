@@ -54,7 +54,14 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_illio_market_insights_volatility",
     "get_mp_illio_market_insights_risk_return",
     "get_mp_illio_market_insights_largest_volatility",
-    "get_mp_illio_market_insights_beta_bands"
+    "get_mp_illio_market_insights_beta_bands",
+    "get_mp_praams_risk_scoring_by_ticker",
+    "get_mp_praams_risk_scoring_by_isin",
+    "get_mp_praams_bond_analyze_by_isin",
+    "get_mp_praams_bank_income_statement_by_ticker",
+    "get_mp_praams_bank_income_statement_by_isin",
+    "get_mp_praams_bank_balance_sheet_by_ticker",
+    "get_mp_praams_bank_balance_sheet_by_isin"
 ]
 
 ALL_TOOLS: list[str] = MAIN_TOOLS + MARKETPLACE_TOOLS + THIRD_PARTY_TOOLS

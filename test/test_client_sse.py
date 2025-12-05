@@ -1,15 +1,17 @@
+# test_client_sse.py
+
 import asyncio
 import json
 import os
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List
 
 from fastmcp import Client
 
-# ---------- Common defaults (can be overridden per test) ----------
+# ---------- Common defaults ----------
 COMMON: Dict[str, Any] = {
-    #"api_token": "PLACE_YOUR_ACTUAL_API_TOKEN_HERE",
     "api_token": os.getenv("EODHD_API_KEY", "demo"),
+    #"api_token": "PLACE_YOUR_API_TOKEN_HERE",
     "fmt": "json",
     "ticker": "AAPL.US",
     "start_date": "2023-01-01",
@@ -23,16 +25,6 @@ Test = Dict[str, Any]
 TESTS: List[Test] = []
 
 def register_test(test: Test) -> None:
-    """
-    Register a test.
-
-    test = {
-      "name": "Human-friendly name",
-      "tool": "get_historical_stock_prices",
-      "use_common": ["api_token", "fmt", "ticker", "start_date", "end_date"],  # optional list
-      "params": { ... overrides / specific params ... }
-    }
-    """
     if "name" not in test or "tool" not in test:
         raise ValueError("Test must include 'name' and 'tool'.")
     TESTS.append(test)
@@ -43,30 +35,30 @@ def _build_params(test: Test) -> Dict[str, Any]:
     for key in use_common:
         if key in COMMON and COMMON[key] is not None:
             params[key] = COMMON[key]
-    # Apply specific params (override COMMON if collisions)
     params.update(test.get("params", {}))
     return params
 
-# ---------- Where to load tests from (single registration point) ----------
+# ---------- Where to load tests from ----------
 TEST_MODULES = [
-    "all_tests",   # add more like "eod", "intraday", etc.
+    "all_tests_beta",
+    "all_tests",# add more like "eod", "intraday", etc.
 ]
 
 def _load_test_modules() -> None:
     for mod_name in TEST_MODULES:
         mod = import_module(mod_name)
-        # each module must expose: register(register_fn, COMMON_defaults)
         if hasattr(mod, "register") and callable(mod.register):
             mod.register(register_test, COMMON)
         else:
-            raise RuntimeError(f"Test module '{mod_name}' must define a callable 'register(register_fn, COMMON)'.")
+            raise RuntimeError(
+                f"Test module '{mod_name}' must define a callable 'register(register_fn, COMMON)'."
+            )
 
-# ---------- Pretty print helpers ----------
+# ---------- Pretty-print helper ----------
 def _pp(obj: Any) -> str:
     try:
         if isinstance(obj, (dict, list)):
             return json.dumps(obj, indent=2, ensure_ascii=False)
-        # try to parse JSON-ish strings returned by server
         if isinstance(obj, str):
             try:
                 parsed = json.loads(obj)
@@ -78,12 +70,20 @@ def _pp(obj: Any) -> str:
         return str(obj)
 
 # ---------- Runner ----------
-async def run_tests(endpoint: str = "http://127.0.0.1:8000/mcp") -> None:
+async def run_tests(
+    endpoint: str | None = None,
+) -> None:
     _load_test_modules()
+
+    # Default to your SSE endpoint
+    if endpoint is None:
+        endpoint = os.getenv("MCP_ENDPOINT", "http://127.0.0.1:8000/sse")
+
+    print(f"Connecting to MCP server at {endpoint} (SSE)...")
 
     async with Client(endpoint) as client:
         tools = await client.list_tools()
-        print("Available tools:", [t["name"] if isinstance(t, dict) else t for t in tools])
+        print("Available tools:", [getattr(t, "name", t) for t in tools])
 
         print("\n=== Running tests ===")
         for idx, test in enumerate(TESTS, start=1):
@@ -102,4 +102,7 @@ async def run_tests(endpoint: str = "http://127.0.0.1:8000/mcp") -> None:
 
 # ---------- CLI entry ----------
 if __name__ == "__main__":
-    asyncio.run(run_tests())
+    import sys
+
+    cli_endpoint = sys.argv[1] if len(sys.argv) > 1 else None
+    asyncio.run(run_tests(endpoint=cli_endpoint))
