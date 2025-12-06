@@ -8,6 +8,7 @@ from app.api_client import make_request
 
 ALLOWED_SORT = {"exp_date", "strike", "-exp_date", "-strike"}
 ALLOWED_TYPE = {None, "put", "call"}
+ALLOWED_FMT = {"json"}
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
@@ -52,6 +53,7 @@ def register(mcp: FastMCP):
         fields: Optional[Union[str, Sequence[str]]] = None,  # fields[options-eod]
         compact: Optional[bool] = None,              # compact=1 to minimize payload
         api_token: Optional[str] = None,
+        fmt: Optional[str] = "json",
     ) -> str:
         """
         Get end-of-day options data (mp/unicornbay/options/eod)
@@ -92,6 +94,9 @@ def register(mcp: FastMCP):
         # token
         if api_token:
             base += _q("api_token", api_token)
+        # format
+        if fmt:
+            base += _q("fmt", fmt)
 
         data = await make_request(base)
 

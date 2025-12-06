@@ -36,6 +36,8 @@ MAIN_TOOLS: list[str] = [
     "get_fundamentals_data",
     "get_technical_indicators",
     "get_us_live_extended_quotes",
+    "get_cboe_indices_list",
+    "get_cboe_index_data"
 ]
 
 MARKETPLACE_TOOLS: list[str] = [
@@ -47,6 +49,7 @@ MARKETPLACE_TOOLS: list[str] = [
 ]
 
 THIRD_PARTY_TOOLS: list[str] = [
+    #illio endpoints
     "get_mp_illio_performance_insights",
     "get_mp_illio_risk_insights",
     "get_mp_illio_market_insights_performance",
@@ -55,13 +58,22 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_illio_market_insights_risk_return",
     "get_mp_illio_market_insights_largest_volatility",
     "get_mp_illio_market_insights_beta_bands",
+    #praams endpoints
     "get_mp_praams_risk_scoring_by_ticker",
     "get_mp_praams_risk_scoring_by_isin",
     "get_mp_praams_bond_analyze_by_isin",
     "get_mp_praams_bank_income_statement_by_ticker",
     "get_mp_praams_bank_income_statement_by_isin",
     "get_mp_praams_bank_balance_sheet_by_ticker",
-    "get_mp_praams_bank_balance_sheet_by_isin"
+    "get_mp_praams_bank_balance_sheet_by_isin",
+    #investverte endpoints
+    "get_mp_investverte_esg_list_companies",
+    "get_mp_investverte_esg_list_countries",
+    "get_mp_investverte_esg_view_country",
+    "get_mp_investverte_esg_view_company",
+    "get_mp_investverte_esg_list_sectors",
+    "get_mp_investverte_esg_view_sector"
+
 ]
 
 ALL_TOOLS: list[str] = MAIN_TOOLS + MARKETPLACE_TOOLS + THIRD_PARTY_TOOLS

@@ -1240,6 +1240,129 @@ def register(add_test, COMMON):
         },
     })
 
+    # --- Investverte ESG: List Companies ---
+
+    # Basic happy-path call using common fmt/api_token
+    add_test({
+        "name": "Investverte: ESG list companies (basic)",
+        "tool": "get_mp_investverte_esg_list_companies",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            # no extra params; uses defaults + COMMON
+        },
+    })
+
+    # --- Investverte ESG: List Countries ---
+
+    # Basic happy-path call using common fmt/api_token
+    add_test({
+        "name": "Investverte: ESG list countries (basic)",
+        "tool": "get_mp_investverte_esg_list_countries",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            # no extra params; uses defaults + COMMON
+        },
+    })
+
+    # --- Investverte ESG: View Country ---
+
+    # Basic: all years/frequencies for US
+    add_test({
+        "name": "Investverte: View country US (all years)",
+        "tool": "get_mp_investverte_esg_view_country",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "US",
+        },
+    })
+
+    # Specific year + frequency
+    add_test({
+        "name": "Investverte: View country US 2021 FY",
+        "tool": "get_mp_investverte_esg_view_country",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "US",
+            "year": 2021,
+            "frequency": "FY",
+        },
+    })
+
+    # --- Investverte ESG: View Company ---
+
+    # Specific year + frequency for a well-known symbol
+    add_test({
+        "name": "Investverte: View company AAPL 2021 FY",
+        "tool": "get_mp_investverte_esg_view_company",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "AAPL",
+            "year": 2021,
+            "frequency": "FY",
+        },
+    })
+
+    # All years/frequencies for a symbol
+    add_test({
+        "name": "Investverte: View company 000039.SZ (all years)",
+        "tool": "get_mp_investverte_esg_view_company",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "000039.SZ",
+        },
+    })
+
+    # --- Investverte ESG: List Sectors ---
+
+    # Basic happy-path call using common fmt/api_token
+    add_test({
+        "name": "Investverte: ESG list sectors (basic)",
+        "tool": "get_mp_investverte_esg_list_sectors",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            # no extra params; uses defaults + COMMON
+        },
+    })
+
+    # --- Investverte ESG: View Sector ---
+
+    # Basic: sector "Airlines"
+    add_test({
+        "name": "Investverte: View sector Airlines (basic)",
+        "tool": "get_mp_investverte_esg_view_sector",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "symbol": "Airlines",
+        },
+    })
+
+    # --- CBOE Indices List ---
+
+    # Basic happy-path call using common fmt/api_token
+    add_test({
+        "name": "CBOE indices: list (basic)",
+        "tool": "get_cboe_indices_list",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            # no extra params; uses defaults + COMMON
+        },
+    })
+
+    # --- CBOE Index Feed API ---
+
+    # Happy path: full filter set for BDE30P
+    add_test({
+        "name": "CBOE index feed: BDE30P 2017-02-01 snapshot_official_closing",
+        "tool": "get_cboe_index_data",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "index_code": "BDE30P",
+            "feed_type": "snapshot_official_closing",
+            "date": "2017-02-01",
+        },
+    })
+
+
 
 
 

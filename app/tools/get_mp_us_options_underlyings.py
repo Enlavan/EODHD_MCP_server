@@ -20,6 +20,7 @@ def register(mcp: FastMCP):
         page_offset: Optional[int] = None,  # optional pagination (if supported server-side)
         page_limit: Optional[int] = None,   # optional pagination (if supported server-side)
         api_token: Optional[str] = None,
+        fmt: Optional[str] = "json",
     ) -> str:
         """
         List all underlying symbols that have options (mp/unicornbay/options/underlying-symbols)
@@ -31,6 +32,9 @@ def register(mcp: FastMCP):
         base += _q("page[limit]", page_limit)
         if api_token:
             base += _q("api_token", api_token)
+        # format
+        if fmt:
+            base += _q("fmt", fmt)
 
         data = await make_request(base)
 

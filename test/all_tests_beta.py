@@ -1,6 +1,7 @@
 # This module registers all "new" tests cases to facilitate debugging only new features.
 
-#def register(add_test, COMMON):
+def register(add_test, COMMON):
+    pass
 # --- Praams Bank Income Statement by ISIN ---
 #    add_test({
 #        "name": "Praams Bank Balance Sheet retrieval by ISIN (US46625H1005)",
@@ -10,4 +11,10 @@
 #            "isin": "US46625H1005",
 #        },
 #    })
+
+
+
+
+
+
 

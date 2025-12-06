@@ -8,28 +8,47 @@ from app.api_client import make_request
 
 ALLOWED_SORT = {"exp_date", "strike", "-exp_date", "-strike"}
 ALLOWED_TYPE = {None, "put", "call"}
+ALLOWED_FMT = {"json"}
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
+
 
 def _q(key: str, val: Optional[Union[str, int, float]]) -> str:
     if val is None or val == "":
         return ""
     return f"&{key}={quote_plus(str(val))}"
 
+
 def _q_bool(key: str, val: Optional[bool]) -> str:
     if val is None:
         return ""
     return f"&{key}={(1 if val else 0)}"
 
+
 def _q_fields_contracts(fields: Optional[Union[str, Sequence[str]]]) -> str:
+    """
+    Build fields[options-contracts] param.
+
+    Accepts:
+      - None  -> no param
+      - "field1,field2"
+      - ["field1", "field2", ...]
+    """
     if fields is None:
         return ""
+
     if isinstance(fields, str):
-        value = fields
+        value = fields.strip()
     else:
-        value = ",".join(f.strip() for f in fields if f and str(f).strip())
+        # Be robust to non-string items in the sequence
+        parts = [str(f).strip() for f in fields if f is not None and str(f).strip()]
+        if not parts:
+            return ""
+        value = ",".join(parts)
+
     return f"&fields[options-contracts]={quote_plus(value)}"
+
 
 def register(mcp: FastMCP):
     @mcp.tool()
@@ -51,6 +70,7 @@ def register(mcp: FastMCP):
         page_limit: int = 1000,                      # page[limit]  1..1000
         fields: Optional[Union[str, Sequence[str]]] = None,  # fields[options-contracts]
         api_token: Optional[str] = None,
+        fmt: Optional[str] = "json",
     ) -> str:
         """
         Get options contracts (mp/unicornbay/options/contracts)
@@ -67,6 +87,8 @@ def register(mcp: FastMCP):
             return _err("'page_offset' must be an integer between 0 and 10000.")
         if not isinstance(page_limit, int) or not (1 <= page_limit <= 1000):
             return _err("'page_limit' must be an integer between 1 and 1000.")
+        if fmt not in ALLOWED_FMT:
+            return _err(f"Invalid 'fmt'. Allowed: {sorted(ALLOWED_FMT)}")
 
         base = f"{EODHD_API_BASE}/mp/unicornbay/options/contracts?1=1"
         # filters
@@ -91,13 +113,18 @@ def register(mcp: FastMCP):
         # token
         if api_token:
             base += _q("api_token", api_token)
+        # format
+        if fmt:
+            base += _q("fmt", fmt)
 
         data = await make_request(base)
 
         if data is None:
             return _err("No response from API.")
+
         if isinstance(data, dict) and data.get("error"):
             return json.dumps({"error": data["error"]}, indent=2)
+
         try:
             return json.dumps(data, indent=2)
         except Exception:
