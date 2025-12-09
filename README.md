@@ -1,4 +1,4 @@
-<a href="https://eodhistoricaldata.com/"> <div align="center"> <picture> <source media="(prefers-color-scheme: light)" srcset="assets/icon.svg"> <source media="(prefers-color-scheme: dark)" srcset="assets/icon.svg"> <img alt="EODHD logo" src="assets/icon.png" height="90"> </picture> </div> </a> <br>
+<a href="https://eodhistoricaldata.com/"> <div align="center"> <picture> <source media="(prefers-color-scheme: light)" srcset="assets/icon.png"> <source media="(prefers-color-scheme: dark)" srcset="assets/icon.svg"> <img alt="EODHD logo" src="assets/icon.png" height="90"> </picture> </div> </a> <br>
 
 # EODHD MCP Server
 
