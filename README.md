@@ -64,13 +64,13 @@ It provides tool-based access to:
 
 * An MCP-compatible client, for example:
 
-- Claude Desktop / Claude Code
+-- Claude Desktop / Claude Code
 
-- ChatGPT with MCP / Connectors
+-- ChatGPT with MCP / Connectors
 
-- MCP Inspector
+-- MCP Inspector
 
-- Custom MCP client
+-- Custom MCP client
 
 
 ## Installation & Setup
