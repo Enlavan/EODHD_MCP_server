@@ -64,13 +64,13 @@ It provides tool-based access to:
 
 * An MCP-compatible client, for example:
 
--- Claude Desktop / Claude Code
+Claude Desktop / Claude Code
 
--- ChatGPT with MCP / Connectors
+ChatGPT with MCP / Connectors
 
--- MCP Inspector
+MCP Inspector
 
--- Custom MCP client
+Custom MCP client
 
 
 ## Installation & Setup
@@ -201,7 +201,7 @@ Once the MCP server is registered in your client (Claude Desktop, Claude Code, C
 
 ### Example 3
 
-* Ask the EODHD MCP tools to:
+Ask the EODHD MCP tools to:
 - Screen US technology stocks with market capitalization > 10B,
 - Compute 30-day SMA and MACD for AAPL.US in mid-2022,
 - List a few AAPL.US options contracts and show EOD data for one of them.
@@ -312,17 +312,17 @@ the MCP server.
 
 * `get_fundamentals_data` – Fundamentals for:
 
-- Stocks,
+Stocks,
 
-- ETFs,
+ETFs,
 
-- mutual funds,
+mutual funds,
 
-- indices,
+indices,
 
-- crypto,
+crypto,
 
-- FX
+FX
 
 * `get_historical_market_cap` – Historical market cap series
 
@@ -352,23 +352,23 @@ the MCP server.
 
 * `get_technical_indicators` – EODHD Technical Indicators API:
 
-- SMA, EMA
+SMA, EMA
 
-- MACD
+MACD
 
-- Stochastic, StochRSI
+Stochastic, StochRSI
 
-- ATR
+ATR
 
-- SAR
+SAR
 
-- Beta vs index (e.g. NDX.INDX)
+Beta vs index (e.g. NDX.INDX)
 
-- Bollinger Bands
+Bollinger Bands
 
-- Split-adjusted series
+Split-adjusted series
 
-- AmiBroker-format exports
+AmiBroker-format exports
 
 
 ### US options
