@@ -206,10 +206,10 @@ Once the MCP server is registered in your client (Claude Desktop, Claude Code, C
     - Compute 30-day SMA and MACD for AAPL.US in mid-2022,
     - List a few AAPL.US options contracts and show EOD data for one of them.
 
-* Your MCP client will translate these into calls like:
-    - get_historical_stock_prices, get_fundamentals_data, get_company_news,
-    - get_stock_screener_data, get_technical_indicators, get_mp_us_options_contracts,
-    - get_mp_us_options_eod, etc.
+Your MCP client will translate these into calls like:
+- get_historical_stock_prices, get_fundamentals_data, get_company_news,
+- get_stock_screener_data, get_technical_indicators, get_mp_us_options_contracts,
+- get_mp_us_options_eod, etc.
 
 ---
 
