@@ -201,15 +201,15 @@ Once the MCP server is registered in your client (Claude Desktop, Claude Code, C
 
 ### Example 3
 
-Ask the EODHD MCP tools to:
-- Screen US technology stocks with market capitalization > 10B,
-- Compute 30-day SMA and MACD for AAPL.US in mid-2022,
-- List a few AAPL.US options contracts and show EOD data for one of them.
+* Ask the EODHD MCP tools to:
+    - Screen US technology stocks with market capitalization > 10B,
+    - Compute 30-day SMA and MACD for AAPL.US in mid-2022,
+    - List a few AAPL.US options contracts and show EOD data for one of them.
 
-Your MCP client will translate these into calls like:
-- get_historical_stock_prices, get_fundamentals_data, get_company_news,
-- get_stock_screener_data, get_technical_indicators, get_mp_us_options_contracts,
-- get_mp_us_options_eod, etc.
+* Your MCP client will translate these into calls like:
+    - get_historical_stock_prices, get_fundamentals_data, get_company_news,
+    - get_stock_screener_data, get_technical_indicators, get_mp_us_options_contracts,
+    - get_mp_us_options_eod, etc.
 
 ---
 
@@ -312,17 +312,17 @@ the MCP server.
 
 * `get_fundamentals_data` – Fundamentals for:
 
-Stocks,
+    - Stocks,
 
-ETFs,
+    - ETFs,
 
-mutual funds,
+    - mutual funds,
 
-indices,
+    - indices,
 
-crypto,
+    - crypto,
 
-FX
+    - FX
 
 * `get_historical_market_cap` – Historical market cap series
 
@@ -352,23 +352,23 @@ FX
 
 * `get_technical_indicators` – EODHD Technical Indicators API:
 
-SMA, EMA
+    - SMA, EMA
 
-MACD
+    - MACD
 
-Stochastic, StochRSI
+    - Stochastic, StochRSI
 
-ATR
+    - ATR
 
-SAR
+    - SAR
 
-Beta vs index (e.g. NDX.INDX)
+    - Beta vs index (e.g. NDX.INDX)
 
-Bollinger Bands
+    - Bollinger Bands
 
-Split-adjusted series
+    - Split-adjusted series
 
-AmiBroker-format exports
+    - AmiBroker-format exports
 
 
 ### US options
