@@ -20,13 +20,13 @@ It provides tool-based access to:
 
 * Corporate actions (dividends, splits, IPOs)
 
-* Options (contracts, EOD, underlyings)
-
 * Macro indicators, exchanges & listings
 
 * CBOE indices and feeds
 
 ### Marketplace datasets:
+
+* Options (contracts, EOD, underlying symbols)
 
 * illio (performance, risk & market insights)
 
