@@ -1,4 +1,4 @@
-# get_us_live_extended_quotes.py
+#get_us_live_extended_quotes.py
 
 import json
 from typing import Iterable, Optional, Sequence, Union
@@ -6,6 +6,8 @@ from typing import Iterable, Optional, Sequence, Union
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 ALLOWED_FMT = {"json", "csv"}
 MAX_PAGE_LIMIT = 100  # per spec
@@ -47,7 +49,7 @@ def _normalize_symbols(symbols: Optional[Union[str, Iterable[str]]]) -> list[str
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_us_live_extended_quotes(
         symbols: Union[str, Sequence[str]],   # one or more (e.g., "AAPL.US,TSLA.US" or ["AAPL.US","TSLA.US"])
         fmt: str = DEFAULT_FMT,               # 'json' (default) or 'csv'

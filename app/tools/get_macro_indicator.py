@@ -1,3 +1,5 @@
+#get_macro_indicator.py
+
 import json
 import re
 from typing import Optional
@@ -5,6 +7,7 @@ from typing import Optional
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 ISO3_RE = re.compile(r"^[A-Z]{3}$")
 ALLOWED_FMT = {"json", "csv"}
@@ -56,7 +59,7 @@ def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_macro_indicator(
         country: str,                          # ISO-3, e.g., USA, FRA, DEU
         indicator: Optional[str] = None,       # default: gdp_current_usd

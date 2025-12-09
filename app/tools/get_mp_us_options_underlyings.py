@@ -1,3 +1,5 @@
+#get_mp_us_options_underlyings.py
+
 import json
 from typing import Optional, Union
 from urllib.parse import quote_plus
@@ -5,6 +7,8 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
@@ -15,7 +19,7 @@ def _q(key: str, val: Optional[Union[str, int]]) -> str:
     return f"&{key}={quote_plus(str(val))}"
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_us_options_underlyings(
         page_offset: Optional[int] = None,  # optional pagination (if supported server-side)
         page_limit: Optional[int] = None,   # optional pagination (if supported server-side)

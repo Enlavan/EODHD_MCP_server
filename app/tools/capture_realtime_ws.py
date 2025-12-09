@@ -1,9 +1,13 @@
+#capture_realtime_ws.py
+
 import asyncio
 import json
 import time
 from typing import List, Optional, Union
 
 from fastmcp import FastMCP
+from mcp.types import ToolAnnotations
+
 
 # WebSocket runtime
 try:
@@ -29,7 +33,7 @@ def _symbols_to_str(symbols: Union[str, List[str]]) -> str:
     return ",".join(s.strip() for s in symbols if s and str(s).strip())
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def capture_realtime_ws(
         feed: str,
         symbols: Union[str, List[str]],

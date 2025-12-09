@@ -1,3 +1,5 @@
+#get_sentiment_data.py
+
 import json
 import re
 from datetime import datetime
@@ -6,6 +8,8 @@ from typing import Optional, Iterable
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -28,7 +32,7 @@ def _normalize_symbols(symbols: Iterable[str]) -> str:
     return ",".join(s.strip() for s in symbols if s and str(s).strip())
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_sentiment_data(
         symbols: str,
         start_date: Optional[str] = None,  # maps to 'from' (YYYY-MM-DD)

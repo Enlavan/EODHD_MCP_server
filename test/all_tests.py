@@ -768,6 +768,28 @@ def register(add_test, COMMON):
         },
     })
 
+    # --- Fundamentals: BTC-USD.CC (General, Tech, Resources, Statistics) ---
+    add_test({
+        "name": "Fundamentals: Cryptocurrency",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "BTC-USD.CC",
+            # sections omitted -> module defaults to General, Tech, Resources, Statistics
+        },
+    })
+
+    # --- Fundamentals: EURUSD.FOREX (General only) ---
+    add_test({
+        "name": "Fundamentals: Currency",
+        "tool": "get_fundamentals_data",
+        "use_common": ["api_token"],
+        "params": {
+            "ticker": "EURUSD.FOREX",
+            # sections omitted -> module defaults to General
+        },
+    })
+
     # tests/catalog_technical_indicators.py
 
     # --- SMA ---
@@ -970,6 +992,32 @@ def register(add_test, COMMON):
         "params": {
             "symbols": ["AAPL.US"],
             "fmt": "csv",
+        },
+    })
+
+    # --- CBOE Indices List ---
+
+    # Basic happy-path call using common fmt/api_token
+    add_test({
+        "name": "CBOE indices: list (basic)",
+        "tool": "get_cboe_indices_list",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            # no extra params; uses defaults + COMMON
+        },
+    })
+
+    # --- CBOE Index Feed API ---
+
+    # Happy path: full filter set for BDE30P
+    add_test({
+        "name": "CBOE index feed: BDE30P 2017-02-01 snapshot_official_closing",
+        "tool": "get_cboe_index_data",
+        "use_common": ["fmt", "api_token"],
+        "params": {
+            "index_code": "BDE30P",
+            "feed_type": "snapshot_official_closing",
+            "date": "2017-02-01",
         },
     })
 
@@ -1336,31 +1384,7 @@ def register(add_test, COMMON):
         },
     })
 
-    # --- CBOE Indices List ---
 
-    # Basic happy-path call using common fmt/api_token
-    add_test({
-        "name": "CBOE indices: list (basic)",
-        "tool": "get_cboe_indices_list",
-        "use_common": ["fmt", "api_token"],
-        "params": {
-            # no extra params; uses defaults + COMMON
-        },
-    })
-
-    # --- CBOE Index Feed API ---
-
-    # Happy path: full filter set for BDE30P
-    add_test({
-        "name": "CBOE index feed: BDE30P 2017-02-01 snapshot_official_closing",
-        "tool": "get_cboe_index_data",
-        "use_common": ["fmt", "api_token"],
-        "params": {
-            "index_code": "BDE30P",
-            "feed_type": "snapshot_official_closing",
-            "date": "2017-02-01",
-        },
-    })
 
 
 

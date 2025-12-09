@@ -1,4 +1,4 @@
-# get_mp_praams_bank_income_statement_by_isin.py
+#get_mp_praams_bank_income_statement_by_isin.py
 
 import json
 from typing import Optional
@@ -7,7 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
-
+from mcp.types import ToolAnnotations
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
@@ -79,7 +79,7 @@ async def _run_praams_income_statement_by_isin(
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_mp_praams_bank_income_statement_by_isin(
         isin: str,                       # e.g. 'US46625H1005' (JPM), 'US0605051046' (BAC)
         api_token: Optional[str] = None,  # per-call override (else env EODHD_API_KEY)
@@ -114,7 +114,7 @@ def register(mcp: FastMCP):
         )
 
     # Optional alias for convenience/back-compat (shorter name)
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def mp_praams_bank_income_statement_by_isin(
         isin: str,
         api_token: Optional[str] = None,

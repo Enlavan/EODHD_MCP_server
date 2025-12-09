@@ -1,3 +1,5 @@
+#get_economic_events.py
+
 import json
 from typing import Optional, Union
 from urllib.parse import quote_plus
@@ -5,6 +7,8 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 ALLOWED_COMPARISON = {None, "mom", "qoq", "yoy"}
 
@@ -17,7 +21,7 @@ def _q(key: str, val: Optional[Union[str, int]]) -> str:
     return f"&{key}={quote_plus(str(val))}"
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_economic_events(
         start_date: Optional[str] = None,   # maps to from= (YYYY-MM-DD)
         end_date: Optional[str] = None,     # maps to to=   (YYYY-MM-DD)

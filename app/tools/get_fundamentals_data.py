@@ -1,3 +1,5 @@
+#get_fundamentals_data.py
+
 import json
 import datetime as dt
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -5,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 
 # --------------------------------
@@ -241,7 +244,10 @@ def _default_sections_for_type(asset_type: str) -> List[str]:
         return ["General", "MutualFund_Data"]
     if t == "index":
         return ["General"]  # Components/Historical controlled via extra_params
+    if t == "crypto":
+        return ["General", "Tech", "Resources", "Statistics"]
     return ["General"]
+
 
 
 # --------------------------------
@@ -249,7 +255,7 @@ def _default_sections_for_type(asset_type: str) -> List[str]:
 # --------------------------------
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_fundamentals_data(
         ticker: str,                                   # "AAPL.US", "VTI.US", "SWPPX.US", "GSPC.INDX", etc.
         api_token: Optional[str] = None,               # per-call override

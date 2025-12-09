@@ -1,3 +1,5 @@
+#get_stock_screener_data.py
+
 import json
 from typing import Optional, Union, List, Any
 from urllib.parse import quote_plus
@@ -5,6 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 
 def _err(msg: str) -> str:
@@ -52,7 +55,7 @@ def _normalize_signals(signals: Optional[Union[str, List[str]]]) -> Optional[str
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def stock_screener(
         filters: Optional[Union[str, List[List[Any]]]] = None,
         signals: Optional[Union[str, List[str]]] = None,

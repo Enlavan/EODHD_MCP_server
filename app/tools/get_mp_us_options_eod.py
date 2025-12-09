@@ -1,3 +1,5 @@
+#get_mp_us_options_eod.py
+
 import json
 from typing import Optional, Union, Sequence
 from urllib.parse import quote_plus
@@ -5,6 +7,8 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 ALLOWED_SORT = {"exp_date", "strike", "-exp_date", "-strike"}
 ALLOWED_TYPE = {None, "put", "call"}
@@ -33,7 +37,7 @@ def _q_fields_eod(fields: Optional[Union[str, Sequence[str]]]) -> str:
     return f"&fields[options-eod]={quote_plus(value)}"
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_us_options_eod(
         underlying_symbol: Optional[str] = None,     # filter[underlying_symbol]
         contract: Optional[str] = None,              # filter[contract]

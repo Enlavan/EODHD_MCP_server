@@ -1,9 +1,12 @@
+#get_us_tick_data.py
 import json
 from typing import Optional, Union
 
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 ALLOWED_FMT = {"json", "csv"}
 
@@ -20,7 +23,7 @@ def _to_int(name: str, v: Union[int, str, None]) -> Optional[int]:
     raise ValueError(f"'{name}' must be an integer UNIX timestamp in seconds (UTC).")
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_us_tick_data(
         ticker: str,                         # maps to s=
         from_timestamp: Union[int, str],     # UNIX seconds (UTC)

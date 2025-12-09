@@ -1,3 +1,5 @@
+#get_mp_index_components.py
+
 import json
 from typing import Optional
 from urllib.parse import quote_plus
@@ -5,7 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
-
+from mcp.types import ToolAnnotations
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
@@ -18,7 +20,7 @@ def _q(key: str, val: Optional[str]) -> str:
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def mp_index_components(
         symbol: str,                        # e.g., "GSPC.INDX" from mp_indices_list
         fmt: str = "json",                  # JSON only (per docs)

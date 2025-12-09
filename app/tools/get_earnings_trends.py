@@ -1,3 +1,5 @@
+#get_earnings_trends.py
+
 import json
 from typing import Optional, Union, List
 from urllib.parse import quote_plus
@@ -5,6 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 
 def _err(msg: str) -> str:
@@ -30,7 +33,7 @@ def _normalize_symbols(symbols: Union[str, List[str], None]) -> Optional[str]:
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_earnings_trends(
         symbols: Union[str, List[str]],      # REQUIRED by API: 'AAPL.US' or ['AAPL.US','MSFT.US']
         fmt: str = "json",                   # Trends are JSON-only (kept for consistency)

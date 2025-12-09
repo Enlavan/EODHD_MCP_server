@@ -1,9 +1,12 @@
+#get_live_price_data.py
+
 import json
 from typing import Iterable, Optional, Sequence
 
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 ALLOWED_FMT = {"json", "csv"}
 MAX_EXTRA_TICKERS = 20  # soft limit recommended by docs (15–20)
@@ -24,7 +27,7 @@ def _normalize_symbols(symbols: Optional[Iterable[str]]) -> list[str]:
     return out
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_live_price_data(
         ticker: str,
         additional_symbols: Optional[Sequence[str]] = None,

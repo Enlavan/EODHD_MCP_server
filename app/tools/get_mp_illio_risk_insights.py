@@ -1,4 +1,5 @@
-# app/tools/mp_illio_risk_insights.py
+#get_mp_illio_risk_insights.py
+
 import json
 from typing import Optional
 from urllib.parse import quote_plus
@@ -6,7 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
-
+from mcp.types import ToolAnnotations
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
@@ -48,7 +49,7 @@ def _canon_id(v: str) -> Optional[str]:
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def mp_illio_risk_insights(
         id: str,                          # one of {'SnP500','DJI','NDX'} (common aliases accepted)
         fmt: str = "json",                # JSON only (Marketplace returns JSON)

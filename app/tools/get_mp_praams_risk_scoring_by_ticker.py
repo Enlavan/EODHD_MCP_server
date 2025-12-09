@@ -1,4 +1,4 @@
-# get_mp_praams_risk_scoring_by_ticker.py
+#get_mp_praams_risk_scoring_by_ticker.py
 
 import json
 from typing import Optional
@@ -7,7 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
-
+from mcp.types import ToolAnnotations
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
@@ -71,7 +71,7 @@ async def _run_praams_equity_by_ticker(ticker: str, api_token: Optional[str]) ->
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_mp_praams_risk_scoring_by_ticker(
         ticker: str,                      # e.g. 'AAPL' (demo supports AAPL, TSLA, AMZN)
         api_token: Optional[str] = None,  # per-call override (else env EODHD_API_KEY)
@@ -99,7 +99,7 @@ def register(mcp: FastMCP):
         return await _run_praams_equity_by_ticker(ticker=ticker, api_token=api_token)
 
     # Optional alias for convenience/back-compat (shorter name)
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def mp_praams_risk_scoring_by_ticker(
         ticker: str,
         api_token: Optional[str] = None,

@@ -1,3 +1,5 @@
+#get_upcoming_dividends.py
+
 import json
 from typing import Optional
 from urllib.parse import quote_plus
@@ -5,6 +7,7 @@ from urllib.parse import quote_plus
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 
 def _err(msg: str) -> str:
@@ -18,7 +21,7 @@ def _q(key: str, val: Optional[str | int]) -> str:
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_upcoming_dividends(
         symbol: Optional[str] = None,          # maps to filter[symbol]
         date_eq: Optional[str] = None,         # maps to filter[date_eq], YYYY-MM-DD

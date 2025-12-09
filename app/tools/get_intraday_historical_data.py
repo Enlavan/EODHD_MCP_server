@@ -1,3 +1,5 @@
+#get_intraday_historical_data.py
+
 import json
 from datetime import datetime, date, timezone
 from typing import Optional, Union
@@ -5,6 +7,7 @@ from typing import Optional, Union
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 ALLOWED_INTERVALS = {"1m", "5m", "1h"}   # per docs
 ALLOWED_FMT = {"json", "csv"}
@@ -143,7 +146,7 @@ def _coerce_from_to(
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_intraday_historical_data(
         ticker: str,
         interval: str = "5m",

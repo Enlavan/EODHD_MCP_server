@@ -1,4 +1,4 @@
-# get_mp_investverte_esg_view_country.py
+#get_mp_investverte_esg_view_country.py
 
 import json
 from typing import Optional, Union
@@ -6,7 +6,7 @@ from typing import Optional, Union
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
-
+from mcp.types import ToolAnnotations
 
 ALLOWED_FREQUENCIES = {"FY", "Q1", "Q2", "Q3", "Q4"}
 
@@ -16,7 +16,7 @@ def _err(msg: str) -> str:
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_mp_investverte_esg_view_country(
         symbol: str,                     # e.g., "US"
         year: Optional[Union[int, str]] = None,  # e.g., 2021

@@ -1,4 +1,4 @@
-# get_cboe_index_data.py
+#get_cboe_index_data.py
 
 import json
 from typing import Optional
@@ -6,6 +6,7 @@ from typing import Optional
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
 
 
 def _err(msg: str) -> str:
@@ -13,7 +14,7 @@ def _err(msg: str) -> str:
 
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_cboe_index_data(
         index_code: str,             # e.g., "BDE30P"
         feed_type: str,              # e.g., "snapshot_official_closing"

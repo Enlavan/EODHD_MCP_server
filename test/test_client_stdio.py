@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
 
 # ---------- Common defaults ----------
 COMMON: Dict[str, Any] = {
-    #"api_token": "PLACE_YOUR_ACTUAL_API_TOKEN_HERE",
+    #"api_token": "PLACE_YOUR_API_TOKEN_HERE",
     "api_token": os.getenv("EODHD_API_KEY", "demo"),
     "fmt": "json",
     "ticker": "AAPL.US",

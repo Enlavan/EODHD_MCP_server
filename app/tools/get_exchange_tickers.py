@@ -1,9 +1,13 @@
+#get_exchange_tickers.py
+
 import json
 from typing import Optional
 
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 ALLOWED_TYPES = {"common_stock", "preferred_stock", "stock", "etf", "fund"}
 
@@ -11,7 +15,7 @@ def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_exchange_tickers(
         exchange_code: str,                # e.g., "US", "LSE", "XETRA", "WAR"
         delisted: Optional[bool] = None,   # adds delisted=1 when True

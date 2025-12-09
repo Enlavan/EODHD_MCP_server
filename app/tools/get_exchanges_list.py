@@ -1,15 +1,19 @@
+#get_exchanges_list.py
+
 import json
 from typing import Optional
 
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_exchanges_list(
         fmt: str = "json",                 # API supports csv too; tool defaults to json
         api_token: Optional[str] = None,   # per-call override (env token otherwise)

@@ -1,4 +1,4 @@
-# app/tools/get_technical_indicators.py
+#get_technical_indicators.py
 import json
 import re
 from datetime import datetime
@@ -7,6 +7,8 @@ from typing import Optional, Union
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 ALLOWED_ORDER = {"a", "d"}                 # ascending, descending (per docs)
@@ -88,7 +90,7 @@ def _validate_float(name: str, val: Optional[Union[int, float, str]]) -> Optiona
     return None
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_technical_indicators(
         ticker: str,
         function: str,                          # required (e.g., 'sma', 'macd', 'stochastic', ...)

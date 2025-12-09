@@ -1,3 +1,5 @@
+#get_company_news.py
+
 import json
 import re
 from datetime import datetime
@@ -6,6 +8,8 @@ from typing import Optional
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
 from app.api_client import make_request
+from mcp.types import ToolAnnotations
+
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 ALLOWED_FMT = {"json", "xml"}
@@ -25,7 +29,7 @@ def _valid_date(d: Optional[str]) -> bool:
         return False
 
 def register(mcp: FastMCP):
-    @mcp.tool()
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_company_news(
         ticker: Optional[str] = None,        # maps to 's'
         tag: Optional[str] = None,           # maps to 't'
