@@ -284,9 +284,6 @@ def register(mcp: FastMCP):
         if fmt != "json":
             return _err("Only 'json' is supported by this tool.")
 
-        if not api_token:
-            return _err("Parameter 'api_token' is required.")
-
         if not ticker or "." not in ticker:
             return _err("Parameter 'ticker' must be in 'SYMBOL.EXCHANGE' format (e.g., 'AAPL.US').")
 
