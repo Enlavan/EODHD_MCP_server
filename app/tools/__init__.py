@@ -66,6 +66,9 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_praams_bank_income_statement_by_isin",
     "get_mp_praams_bank_balance_sheet_by_ticker",
     "get_mp_praams_bank_balance_sheet_by_isin",
+    "get_mp_praams_smart_investment_screener_bond",
+    "get_mp_praams_smart_investment_screener_equity",
+    
     #investverte endpoints
     "get_mp_investverte_esg_list_companies",
     "get_mp_investverte_esg_list_countries",
@@ -73,6 +76,7 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_investverte_esg_view_company",
     "get_mp_investverte_esg_list_sectors",
     "get_mp_investverte_esg_view_sector"
+
 
 ]
 
