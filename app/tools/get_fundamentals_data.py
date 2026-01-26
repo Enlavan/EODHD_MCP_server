@@ -1,4 +1,4 @@
-#get_fundamentals_data.py
+# get_fundamentals_data.py
 
 import json
 import datetime as dt
@@ -41,7 +41,7 @@ def _in_range(date_str: str, start: Optional[dt.date], end: Optional[dt.date]) -
         return False
     return True
 
-def _build_url(ticker: str, params: Dict[str, Union[str, int, float, bool]]) -> str:
+def _build_url(ticker: str, params: Dict[str, Any]) -> str:
     base = f"{EODHD_API_BASE}/fundamentals/{ticker}?fmt=json"
     parts: List[str] = []
     for k, v in params.items():
@@ -61,17 +61,30 @@ def _merge_tree(dest: Dict[str, Any], src: Dict[str, Any]) -> None:
         dest[k] = v
 
 
+def _token_override(api_token: Optional[str], api_key: Optional[str]) -> Optional[str]:
+    """
+    Accept api_token (preferred) and api_key (alias) as per-call overrides.
+    """
+    t = (api_token or "").strip() if isinstance(api_token, str) else ""
+    if t:
+        return t
+    k = (api_key or "").strip() if isinstance(api_key, str) else ""
+    return k or None
+
+
 # --------------------------------
 # Fetchers
 # --------------------------------
 
 async def _fetch_filtered_block(
     ticker: str,
-    api_token: str,
+    api_token: Optional[str],
     filter_expr: str,
-    extra_params: Optional[Dict[str, Union[str, int, float, bool]]] = None,
+    extra_params: Optional[Dict[str, Any]] = None,
 ) -> Any:
-    params: Dict[str, Union[str, int, float, bool]] = {"api_token": api_token, "filter": filter_expr}
+    params: Dict[str, Any] = {"filter": filter_expr}
+    if api_token:
+        params["api_token"] = api_token
     if extra_params:
         for k, v in extra_params.items():
             params[k] = v
@@ -79,15 +92,18 @@ async def _fetch_filtered_block(
     data = await make_request(url)
     return data
 
-async def _fetch_general(ticker: str, api_token: str) -> Dict[str, Any]:
-    url = _build_url(ticker, {"api_token": api_token, "filter": "General"})
+async def _fetch_general(ticker: str, api_token: Optional[str]) -> Dict[str, Any]:
+    url = _build_url(ticker, {"filter": "General", "api_token": api_token} if api_token else {"filter": "General"})
     data = await make_request(url)
     if not isinstance(data, dict) or "Type" not in data:
         raise RuntimeError("Unexpected 'General' response: missing 'Type'")
     return data
 
 async def _fetch_sections_bulk(
-    ticker: str, api_token: str, sections: List[str], extra_params: Optional[Dict[str, Union[str, int, float, bool]]] = None
+    ticker: str,
+    api_token: Optional[str],
+    sections: List[str],
+    extra_params: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Request multiple top-level sections with comma-separated filter.
@@ -104,7 +120,7 @@ async def _fetch_sections_bulk(
 
 async def _discover_financial_dates_from_outstanding_shares(
     ticker: str,
-    api_token: str,
+    api_token: Optional[str],
     start: Optional[dt.date],
     end: Optional[dt.date],
 ) -> Tuple[List[str], List[str], Dict[str, Any]]:
@@ -135,7 +151,7 @@ async def _discover_financial_dates_from_outstanding_shares(
 
 async def _fetch_financials_for_dates(
     ticker: str,
-    api_token: str,
+    api_token: Optional[str],
     quarter_dates: List[str],
     annual_dates: List[str],
 ) -> Dict[str, Any]:
@@ -168,7 +184,9 @@ async def _fetch_financials_for_dates(
     return result
 
 def _prune_common_stock_by_date(
-    assembled: Dict[str, Any], start: Optional[dt.date], end: Optional[dt.date]
+    assembled: Dict[str, Any],
+    start: Optional[dt.date],
+    end: Optional[dt.date],
 ) -> Dict[str, Any]:
     """
     Applies pruning rules:
@@ -249,7 +267,6 @@ def _default_sections_for_type(asset_type: str) -> List[str]:
     return ["General"]
 
 
-
 # --------------------------------
 # MCP Tool
 # --------------------------------
@@ -258,14 +275,15 @@ def register(mcp: FastMCP):
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_fundamentals_data(
         ticker: str,                                   # "AAPL.US", "VTI.US", "SWPPX.US", "GSPC.INDX", etc.
-        api_token: Optional[str] = None,               # per-call override
+        api_token: Optional[str] = None,               # per-call override (preferred name)
+        api_key: Optional[str] = None,                 # per-call override (alias)
         # Common Stock date pruning window (inclusive). For Indices, pass 'from'/'to' via extra_params.
         from_date: Optional[str] = None,               # "YYYY-MM-DD"
         to_date: Optional[str] = None,                 # "YYYY-MM-DD"
         # Explicit sections (top-level) to fetch; if omitted, defaults by detected Type.
-        sections: Optional[list] = None,               # e.g. ["General","Highlights","Earnings"]
+        sections: Optional[List[str]] = None,          # e.g. ["General","Highlights","Earnings"]
         # For indices or extra flags: {"historical": 1, "from": "2020-01-01", "to": "2023-01-01"}
-        extra_params: Optional[dict] = None,
+        extra_params: Optional[Dict[str, Any]] = None,
         # For Common Stock, whether to include Financials. When a date window is provided,
         # the tool only fetches leaves for in-range dates discovered via outstandingShares.
         include_financials: bool = True,
@@ -274,6 +292,11 @@ def register(mcp: FastMCP):
     ) -> str:
         """
         Get Fundamentals for Stocks, ETFs, Mutual Funds, and Indices.
+
+        - Per-call auth override is OPTIONAL:
+            api_token (preferred) or api_key (alias).
+          If neither is provided, make_request() will inject the token from the MCP request or env.
+
         - Auto-detects asset Type via 'General'.
         - For Common Stock: if from/to are provided, prunes `outstandingShares`, `Earnings`, and `Financials`
           outside the window. Financials are fetched only for in-range period end dates (from outstandingShares).
@@ -284,12 +307,10 @@ def register(mcp: FastMCP):
         if fmt != "json":
             return _err("Only 'json' is supported by this tool.")
 
-        if not api_token:
-            return _err("Parameter 'api_token' is required.")
-
         if not ticker or "." not in ticker:
             return _err("Parameter 'ticker' must be in 'SYMBOL.EXCHANGE' format (e.g., 'AAPL.US').")
 
+        token = _token_override(api_token, api_key)
         start = _to_date(from_date)
         end = _to_date(to_date)
         if to_date and from_date and start and end and end < start:
@@ -297,7 +318,7 @@ def register(mcp: FastMCP):
 
         # --- 1) Detect Type (via General)
         try:
-            general = await _fetch_general(ticker, api_token)
+            general = await _fetch_general(ticker, token)
         except Exception as e:
             return _err(f"Failed to get General: {e}")
 
@@ -312,19 +333,22 @@ def register(mcp: FastMCP):
         assembled: Dict[str, Any] = {"General": general}
 
         # --- 3) Fetch non-Financials in bulk where possible
+        non_financial_sections: List[str] = []
         try:
             # We never ask for 'Financials' in the bulk; we fetch that separately below.
-            non_financial_sections = [s for s in non_general_sections if str(s).lower() != "financials"]
+            for s in non_general_sections:
+                if str(s).strip().lower() != "financials":
+                    non_financial_sections.append(str(s))
             if non_financial_sections:
                 bulk = await _fetch_sections_bulk(
                     ticker,
-                    api_token,
-                    [str(s) for s in non_financial_sections],
+                    token,
+                    non_financial_sections,
                     extra_params=extra_params if isinstance(extra_params, dict) else None,
                 )
                 _merge_tree(assembled, bulk)
         except Exception as e:
-            return _err(f"Failed to fetch sections {non_financial_sections}: {e}")
+            return _err("Failed to fetch sections " + repr(non_financial_sections) + ": " + repr(e))
 
         # --- 4) Financials handling for Common Stock
         if asset_type.lower() == "common stock" and include_financials:
@@ -332,12 +356,12 @@ def register(mcp: FastMCP):
                 if start or end:
                     # Discover in-range dates via outstandingShares, then fetch leaves only for those dates
                     q_dates, a_dates, os_block = await _discover_financial_dates_from_outstanding_shares(
-                        ticker, api_token, start, end
+                        ticker, token, start, end
                     )
                     if os_block:
                         assembled["outstandingShares"] = os_block  # ensure we have this block for pruning
                     fin_tree = await _fetch_financials_for_dates(
-                        ticker, api_token, quarter_dates=q_dates, annual_dates=a_dates
+                        ticker, token, quarter_dates=q_dates, annual_dates=a_dates
                     )
                     _merge_tree(assembled, fin_tree)
                 else:
@@ -347,7 +371,7 @@ def register(mcp: FastMCP):
                         fin_full["Financials"].setdefault(stmt, {})
                         for period in ("quarterly", "yearly"):
                             path = f"Financials::{stmt}::{period}"
-                            block = await _fetch_filtered_block(ticker, api_token, path)
+                            block = await _fetch_filtered_block(ticker, token, path)
                             fin_full["Financials"][stmt][period] = block
                     _merge_tree(assembled, fin_full)
             except Exception as e:
