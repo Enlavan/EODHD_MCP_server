@@ -39,7 +39,7 @@ It provides tool-based access to:
 
 ✅ End-of-day, intraday, and US tick data
 
-✅ Live (delayed) quotes and extended US quotes (Live v2)
+✅ Live (delayed) quotes and extended US quotes (Live v2 quotes)
 
 ✅ Fundamentals (stocks, ETFs, mutual funds, indices, crypto, FX)
 
