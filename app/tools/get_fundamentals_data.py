@@ -302,7 +302,6 @@ def register(mcp: FastMCP):
           outside the window. Financials are fetched only for in-range period end dates (from outstandingShares).
         - For Indices: pass 'historical=1' and optional 'from'/'to' through `extra_params`.
         - Always returns JSON (fmt must be 'json').
-
         """
         # --- Validate basics
         if fmt != "json":
