@@ -58,6 +58,7 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_illio_market_insights_risk_return",
     "get_mp_illio_market_insights_largest_volatility",
     "get_mp_illio_market_insights_beta_bands",
+
     #praams endpoints
     "get_mp_praams_risk_scoring_by_ticker",
     "get_mp_praams_risk_scoring_by_isin",
