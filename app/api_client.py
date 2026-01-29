@@ -3,51 +3,46 @@
 import httpx
 from .config import EODHD_API_KEY
 
-#from fastmcp.server.dependencies import get_http_request
-
-
-#def _resolve_eodhd_token_from_request() -> str | None:
-#    """
-#    Try to read ?apikey=... from the incoming MCP HTTP request.
-#    Safe to call even outside HTTP context (falls back).
-#    """
-#    try:
-#        req = get_http_request()
-#    except RuntimeError:
-#        # Not running under HTTP transport (e.g., stdio), or no active request
-#        return None
-#    except Exception:
-#        return None
-#
-#    apikey = req.query_params.get("apikey")
-#    if apikey:
-#        return apikey
-
-#    return req.query_params.get("api_key") or req.query_params.get("token")
-
-# app/api_client.py
-
 from fastmcp.server.dependencies import get_http_request
 
 def _resolve_eodhd_token_from_request() -> str | None:
+    """
+    Resolve the EODHD API key from the incoming request.
+
+    For OAuth Bearer tokens, translates them to the user's EODHD API key.
+    For legacy API keys, returns them directly.
+    """
     try:
         req = get_http_request()
     except Exception:
         return None
 
-    # 1) Authorization: Bearer <token>
+    # 1) Authorization: Bearer <oauth_token>
+    # Need to translate OAuth token to user's EODHD API key
     auth = req.headers.get("authorization") or req.headers.get("Authorization")
     if auth and auth.lower().startswith("bearer "):
-        token = auth.split(" ", 1)[1].strip()
-        if token:
-            return token
+        oauth_token = auth.split(" ", 1)[1].strip()
+        if oauth_token:
+            # Translate OAuth access token to EODHD API key
+            try:
+                from .oauth.auth_server import get_storage
+                storage = get_storage()
+                eodhd_key = storage.get_eodhd_api_key_for_token(oauth_token)
+                if eodhd_key:
+                    return eodhd_key
+            except Exception as e:
+                # If translation fails, continue to other methods
+                import logging
+                logging.getLogger("eodhd-mcp.api_client").debug(
+                    f"Could not translate OAuth token to EODHD key: {e}"
+                )
 
-    # 2) X-API-Key (optional)
+    # 2) X-API-Key header (direct EODHD API key)
     xkey = req.headers.get("x-api-key") or req.headers.get("X-API-Key")
     if xkey:
         return xkey.strip()
 
-    # 3) Legacy query params
+    # 3) Legacy query params (direct EODHD API key)
     apikey = req.query_params.get("apikey")
     if apikey:
         return apikey

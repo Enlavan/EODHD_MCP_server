@@ -79,7 +79,7 @@ It provides tool-based access to:
 
 ```bash
 git clone https://github.com/Enlavan/EODHD_MCP_server.git
-cd EODHD_MCP_server
+cd EODHD_MCP_server_OAuth
 pip install -r requirements.txt
 ```
 
@@ -152,7 +152,7 @@ python -m entrypoints.server_stdio --apikey YOUR_EODHD_API_KEY
     "eodhd-mcp": {
       "command": "python3",
       "args": [
-        "/home/user/EODHD_MCP_server/server.py", //actual path to the library
+        "/home/user/EODHD_MCP_server_OAuth/server.py", //actual path to the library
         "--stdio"
       ],
        "env": {

@@ -30,6 +30,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run SSE transport (Server-Sent Events).",
     )
 
+    # OAuth support
+    p.add_argument(
+        "--oauth",
+        action="store_true",
+        help="Enable OAuth 2.1 mode (mounts /mcp, /mcp-oauth, and auth server).",
+    )
+
     # Defaults come from environment variables (loaded from .env), but CLI overrides env
     p.add_argument(
         "--host",
@@ -118,20 +125,36 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if run_http:
-            logger.info(
-                "Starting EODHD MCP HTTP Server on http://%s:%s%s ...",
-                args.host,
-                args.port,
-                args.path,
-            )
-            mcp.run(
-                transport="streamable-http",
-                host=args.host,
-                port=args.port,
-                path=args.path,
-            )
-            logger.info("HTTP server stopped.")
-            return 0
+            # Check if OAuth mode is enabled
+            if args.oauth or os.getenv("OAUTH_ENABLED", "").lower() == "true":
+                logger.info("=" * 70)
+                logger.info("EODHD MCP Server - OAuth 2.1 Mode")
+                logger.info("=" * 70)
+                logger.info("Starting multi-mount server on http://%s:%s", args.host, args.port)
+                logger.info("  - Auth Server: http://%s:%s/", args.host, args.port)
+                logger.info("  - Legacy MCP:  http://%s:%s/mcp", args.host, args.port)
+                logger.info("  - OAuth MCP:   http://%s:%s/mcp-oauth", args.host, args.port)
+                logger.info("=" * 70)
+
+                # Import and run the multi-mount server
+                from app.oauth.mount_apps import run_multi_mount_server
+                run_multi_mount_server(host=args.host, port=args.port)
+                return 0
+            else:
+                logger.info(
+                    "Starting EODHD MCP HTTP Server on http://%s:%s%s ...",
+                    args.host,
+                    args.port,
+                    args.path,
+                )
+                mcp.run(
+                    transport="streamable-http",
+                    host=args.host,
+                    port=args.port,
+                    path=args.path,
+                )
+                logger.info("HTTP server stopped.")
+                return 0
 
         logger.error("No transport selected.")
         return 2

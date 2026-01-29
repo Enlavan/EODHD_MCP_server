@@ -19,6 +19,7 @@ from typing import Optional
 from dataclasses import dataclass, field
 
 import httpx
+import jwt
 
 logger = logging.getLogger("eodhd-mcp.oauth")
 
@@ -27,6 +28,7 @@ OAUTH_ISSUER = os.getenv("OAUTH_ISSUER", "https://eodhd.com")
 OAUTH_INTROSPECTION_URL = os.getenv("OAUTH_INTROSPECTION_URL", "")
 OAUTH_JWKS_URL = os.getenv("OAUTH_JWKS_URL", "")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "https://mcp.eodhd.com")
+JWT_SECRET = os.getenv("JWT_SECRET", "")
 
 # Scopes for EODHD MCP Server
 SCOPES = {
@@ -202,6 +204,13 @@ class OAuthValidator:
         if cached is not None:
             return cached
 
+        # Try JWT validation first (our internal tokens)
+        if JWT_SECRET:
+            info = self._validate_jwt(token)
+            if info.active:
+                self._set_cached(token, info)
+                return info
+
         # Try introspection if configured
         if self.introspection_url:
             info = await self._introspect_token(token)
@@ -216,6 +225,32 @@ class OAuthValidator:
             scopes=["full-access"],
         )
         return info
+
+    def _validate_jwt(self, token: str) -> TokenInfo:
+        """
+        Validate JWT token using configured secret.
+        """
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+
+            # Check expiration
+            if payload.get("exp", 0) < time.time():
+                return TokenInfo(active=False)
+
+            scopes = payload.get("scope", "").split() if payload.get("scope") else []
+
+            return TokenInfo(
+                active=True,
+                subject=payload.get("sub"),
+                client_id=payload.get("client_id"),
+                scopes=scopes,
+                expires_at=payload.get("exp"),
+                issued_at=payload.get("iat"),
+            )
+
+        except jwt.InvalidTokenError as e:
+            logger.debug(f"JWT validation failed: {e}")
+            return TokenInfo(active=False)
 
     async def _introspect_token(self, token: str) -> TokenInfo:
         """

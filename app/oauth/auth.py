@@ -29,7 +29,7 @@ from .oauth import (
     get_required_scopes,
     SCOPES,
 )
-from .config import EODHD_API_KEY
+from app.config import EODHD_API_KEY
 
 logger = logging.getLogger("eodhd-mcp.auth")
 
