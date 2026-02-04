@@ -1,3 +1,10 @@
 python-dotenv>=1.0.0
 fastmcp==2.14.5
 httpx>=0.27.0
+starlette>=0.37.2
+uvicorn>=0.30.0
+PyJWT>=2.8.0
+python-multipart>=0.0.9
+itsdangerous>=2.1.2
+key-value>=0.2.0
+cryptography>=42.0.0

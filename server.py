@@ -44,8 +44,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--path",
-        default=os.getenv("MCP_PATH", "/mcp"),
-        help="HTTP path for streamable-http (default: /mcp or $MCP_PATH).",
+        default=os.getenv("MCP_V1_PATH", "/v1/mcp"),
+        help="HTTP path for streamable-http (default: /v1/mcp or $MCP_V1_PATH).",
     )
     p.add_argument(
         "--log-level",
@@ -76,12 +76,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
 
     )
-    # we should use API key from this argument only if --use-local set.
-    # The API key obtained from the OAuth server store and passed via the "api_key" request parameter must overwrite this parameter.
+    # We use API key from this argument only if --use-local is set and transport is stdio.
     p.add_argument(
         "--apikey", "--api-key",
         dest="api_key",
-        help="EODHD API key, used only if the API key is not in the request or via OAUth",
+        help="EODHD API key (stdio only when used with --use-local).",
     )
 
     return p
@@ -94,8 +93,17 @@ def main(argv: list[str] | None = None) -> int:
     args, unknown = parser.parse_known_args(argv)
 
 
-    if args.use-local and args.api_key:
-        os.environ["EODHD_API_KEY"] = args.api_key
+    # Only allow CLI/env API key injection for non-HTTP contexts (stdio).
+    # For HTTP/SSE, API keys must come from request headers/query or OAuth.
+    run_stdio = args.stdio
+    run_sse = args.sse
+    run_http = args.http or not (args.stdio or args.sse)
+
+    if args.use_local and args.api_key:
+        if run_stdio:
+            os.environ["EODHD_API_KEY"] = args.api_key
+        else:
+            print("Ignoring --use-local/--apikey for HTTP/SSE transports.", file=sys.stderr)
 
     if unknown:
         # Don’t print secrets; just show shapes
@@ -115,9 +123,6 @@ def main(argv: list[str] | None = None) -> int:
     # - If --stdio: stdio
     # - If --sse: SSE
     # - Else: HTTP (streamable-http)
-    run_stdio = args.stdio
-    run_sse = args.sse
-    run_http = args.http or not (args.stdio or args.sse)
 
     try:
         if run_stdio:
@@ -161,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
                     os.environ["MCP_SERVER_URL"] = f"{scheme}://{args.host}:{args.port}"
 
                 # Import and run the multi-mount server
-                from app.oauth.mount_apps import run_multi_mount_server
+                from app.mount_apps import run_multi_mount_server
 
                 run_multi_mount_server(host=args.host, port=args.port)
                 return 0

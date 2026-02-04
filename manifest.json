@@ -10,16 +10,18 @@
   },
   "server": {
     "type": "python",
-    "entry_point": "entrypoints/server_stdio.py",
+    "entry_point": "server.py",
     "mcp_config": {
       "command": "python3",
       "args": [
-        "${__dirname}/entrypoints/server_stdio.py",
+        "${__dirname}/server.py",
+        "--stdio",
+        "--use-local",
         "--apikey",
         "${user_config.EODHD_API_KEY}"
       ],
       "env": {
-        "PYTHONPATH": "server/lib",
+        "PYTHONPATH": "${__dirname}",
         "EODHD_API_KEY": "${user_config.EODHD_API_KEY}"
       }
     }

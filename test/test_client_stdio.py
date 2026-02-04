@@ -15,8 +15,7 @@ if str(ROOT) not in sys.path:
 
 # ---------- Common defaults ----------
 COMMON: Dict[str, Any] = {
-    #"api_token": "PLACE_YOUR_API_TOKEN_HERE",
-    "api_token": os.getenv("EODHD_API_KEY", "demo"),
+    "api_token": os.getenv("EODHD_API_KEY"),
     "fmt": "json",
     "ticker": "AAPL.US",
     "start_date": "2023-01-01",
@@ -123,7 +122,7 @@ async def _run_suite(session: ClientSession) -> None:
 async def run_tests_stdio(cmdline: str) -> None:
     """
     cmdline: full command as ONE string, e.g.
-      "python -m entrypoints.server_stdio --apikey 68e1d0927848e6.45930006"
+      "python server.py --stdio --use-local --apikey 68e1d0927848e6.45930006"
     """
     _load_test_modules()
 
@@ -150,9 +149,9 @@ def main() -> None:
     parser.add_argument(
         "--cmd",
         dest="stdio_cmd",
-        default=os.getenv("MCP_STDIO_CMD", "python -m entrypoints.server_stdio"),
+        default=os.getenv("MCP_STDIO_CMD", "python server.py --stdio"),
         help='Full command to launch the stdio server (single string). '
-             'Example: "python -m entrypoints.server_stdio --apikey YOUR_KEY".',
+             'Example: "python server.py --stdio --use-local --apikey YOUR_KEY".',
     )
     args = parser.parse_args()
     asyncio.run(run_tests_stdio(args.stdio_cmd))

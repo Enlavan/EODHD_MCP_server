@@ -60,7 +60,10 @@ It provides tool-based access to:
 
 * Python **3.10+**
 
-* A valid EODHD API key (set via EODHD_API_KEY or --apikey)
+* A valid EODHD API key
+  - STDIO: set `EODHD_API_KEY` or pass `--use-local --apikey`
+  - HTTP `/v1/mcp`: pass via headers/query params (env is not injected)
+  - OAuth `/v2/mcp`: use Bearer token flow
 
 * An MCP-compatible client, for example:
 
@@ -83,13 +86,14 @@ cd EODHD_MCP_server
 pip install -r requirements.txt
 ```
 
-Create a `.env` at the repo root (used by HTTP + stdio entrypoints):
+Create a `.env` at the repo root (used by `server.py`):
 
 ```env
 EODHD_API_KEY=YOUR_EODHD_API_KEY
 # Optional (HTTP server):
 MCP_HOST=127.0.0.1
 MCP_PORT=8000
+JWT_SECRET=YOUR_LONG_RANDOM_SECRET
 ```
 
 ---
@@ -100,22 +104,19 @@ MCP_PORT=8000
 
 ```bash
 python server.py
-# → http://127.0.0.1:8000/mcp (defaults; override with MCP_HOST/MCP_PORT)
+# → http://127.0.0.1:8000/v1/mcp (defaults; override with MCP_HOST/MCP_PORT)
 ```
 
-**Option B (module entrypoint):**
-
-```bash
-python -m entrypoints.server_http
-# uses .env for key/host/port
-```
+Note: OAuth mode is enabled by default and requires `JWT_SECRET`. Use `--no-oauth` to disable.
+The root path `/` does not serve an informational page; use the `.well-known` discovery endpoints.
+For HTTP `/v1/mcp`, API keys are not injected from env; provide via headers/query or tool param.
 
 ---
 
 ### 3) Run as an MCP sse server
 
 ```bash
-python -m entrypoints.server_sse
+python server.py --sse
 ```
 
 ---
@@ -125,11 +126,12 @@ python -m entrypoints.server_sse
 For clients that launch the server via stdio:
 
 ```bash
-# Pass API key from CLI, useful for dev or when no .env
-python -m entrypoints.server_stdio --apikey YOUR_EODHD_API_KEY
+# Use env EODHD_API_KEY or pass API key via CLI (stdio only)
+python server.py --stdio
+python server.py --stdio --use-local --apikey YOUR_EODHD_API_KEY
 ```
 
-(If `--apikey` is set, it overrides `EODHD_API_KEY` from the environment.)
+(For HTTP/SSE, API keys are not injected from env; provide via headers/query or OAuth.)
 
 ---
 
@@ -173,12 +175,12 @@ Restart Claude Desktop. The server will be launched on demand via stdio.
 2. Enable developer/connectors features.
 3. Add a custom MCP **HTTP** source:
 
-   * URL: `http://127.0.0.1:8000/mcp` (or your deployed URL)
-   * Provide your EODHD API key as required by your gateway or set it in `.env` on the server.
+   * URL: `http://127.0.0.1:8000/v1/mcp` (or your deployed URL)
+   * Provide your EODHD API key via headers/query params (legacy /v1/mcp) or use OAuth at `/v2/mcp`.
 4. Start a new chat → **Add sources** → select your MCP server.
 
 > If your ChatGPT workspace supports hosted connectors with query params, you can deploy the HTTP server and expose a URL like:
-> `https://YOUR_HOST/mcp` (API key handled server-side via env).
+> `https://YOUR_HOST/v1/mcp` (API key provided by your gateway or query param).
 
 ---
 
@@ -223,15 +225,15 @@ test catalog in test/all_tests.py.
 # Terminal 1: start HTTP MCP server
 
 ```bash
-python -m entrypoints.server_http
-# uses http://127.0.0.1:8000/mcp by default
+python server.py
+# uses http://127.0.0.1:8000/v1/mcp by default
 ```
 
 # Terminal 2: run HTTP client tests
 
 ```bash
 python test/test_client_http.py
-# uses http://127.0.0.1:8000/mcp by default
+# uses http://127.0.0.1:8000/v1/mcp by default
 ```
 
 ***SSE test***
@@ -239,7 +241,7 @@ python test/test_client_http.py
 # Terminal 1: start SSE MCP server
 
 ```bash
-python -m entrypoints.server_sse
+python server.py --sse
 ```
 
 # Terminal 2: run SSE client tests
@@ -251,7 +253,7 @@ python test/test_client_sse.py
 ***STDIO test***
 
 ```bash
-python test/test_client_stdio.py   --cmd "python3 -m entrypoints.server_stdio --apikey YOUR_EODHD_API_KEY"
+python test/test_client_stdio.py --cmd "python3 server.py --stdio --use-local --apikey YOUR_EODHD_API_KEY"
 ```
 
 These clients load test/all_tests.py (plus all_tests_beta.py if you choose) which registers a comprehensive set of working calls against all the tools.
@@ -497,29 +499,17 @@ EODHD_MCP_server/
 │       ├── get_mp_praams_bond_analyze_by_isin.py
 │       ├── get_mp_praams_risk_scoring_by_isin.py
 │       ├── get_mp_praams_risk_scoring_by_ticker.py
-│       ├── get_mp_us_options_contracts.py
-│       ├── get_mp_us_options_eod.py
-│       ├── get_mp_us_options_underlyings.py
-│       ├── get_news_word_weights.py
-│       ├── get_sentiment_data.py
-│       ├── get_stock_screener_data.py
+│       ├── get_company_news.py
+│       ├── get_exchange_tickers.py
+│       ├── get_exchanges_list.py
+│       ├── get_historical_stock_prices.py
+│       ├── get_intraday_historical_data.py
+│       ├── get_live_price_data.py
 │       ├── get_stocks_from_search.py
-│       ├── get_symbol_change_history.py
-│       ├── get_technical_indicators.py
-│       ├── get_upcoming_dividends.py
-│       ├── get_upcoming_earnings.py
-│       ├── get_upcoming_ipos.py
-│       ├── get_upcoming_splits.py
-│       ├── get_user_details.py
-│       ├── get_us_live_extended_quotes.py
-│       └── get_us_tick_data.py
+│       └── get_user_details.py
 ├── assets/
 │   ├── icon.png
 │   └── icon.svg
-├── entrypoints/
-│   ├── server_http.py
-│   ├── server_sse.py
-│   └── server_stdio.py
 ├── test/
 │   ├── all_tests.py
 │   ├── all_tests_beta.py
@@ -535,10 +525,7 @@ EODHD_MCP_server/
 
 **Entry points**
 
-* `server.py` – convenience HTTP server entrypoint (reads `.env`).
-* `entrypoints/server_http.py` – HTTP MCP server (module form).
-* `entrypoints/server_sse.py` – HTTP + SSE MCP server.
-* `entrypoints/server_stdio.py` – STDIO MCP server (supports `--apikey`).
+* `server.py` – main entrypoint (HTTP by default, supports `--stdio` and `--sse`).
 
 ---
 

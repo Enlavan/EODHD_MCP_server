@@ -10,8 +10,7 @@ from fastmcp import Client
 
 # ---------- Common defaults ----------
 COMMON: Dict[str, Any] = {
-    "api_token": os.getenv("EODHD_API_KEY", "demo"),
-    #"api_token": "PLACE_YOUR_API_TOKEN_HERE",
+    "api_token": os.getenv("EODHD_API_KEY"),
     "fmt": "json",
     "ticker": "AAPL.US",
     "start_date": "2023-01-01",
@@ -40,8 +39,7 @@ def _build_params(test: Test) -> Dict[str, Any]:
 
 # ---------- Where to load tests from ----------
 TEST_MODULES = [
-    "all_tests_beta",
-    "all_tests",# add more like "eod", "intraday", etc.
+    "all_tests",
 ]
 
 def _load_test_modules() -> None:

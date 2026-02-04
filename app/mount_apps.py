@@ -5,7 +5,7 @@ Multi-mount ASGI application for EODHD MCP Server with OAuth support.
 
 Mounts (as requested):
 1) Auth Server at /                   - OAuth endpoints + .well-known discovery (ROOT!)
-2) Legacy MCP at /v1/mcp              - legacy token styles (apikey, x-api-key, etc.)
+2) Legacy MCP at /v1/mcp              - legacy token styles (apikey, x-api-key, etc, parsing them from query parameters)
 3) OAuth MCP (protected resource) at /v2/mcp  - Bearer token protected resource (OAuth 2.1)
 
 Why we keep the auth server at "/":
@@ -35,8 +35,8 @@ from starlette.responses import Response
 from fastmcp import FastMCP
 
 from app.tools import register_all
-from .auth_server import create_auth_server_app
-from .resource_server import OAuthMiddleware
+from app.oauth.auth_server import create_auth_server_app
+from app.oauth.resource_server import OAuthMiddleware
 
 logger = logging.getLogger("eodhd-mcp.mount_apps")
 
@@ -56,105 +56,15 @@ def _normalize_path(p: str) -> str:
     return p
 
 
-def _detect_fastmcp_internal_mcp_path(app: Any) -> str:
-    """
-    Best-effort detection of the internal MCP path exposed by the FastMCP http_app().
-
-    Common cases:
-      - app.routes has Mount("/mcp", ...)
-      - env MCP_PATH is set (e.g. "/mcp")
-      - fallback "/mcp"
-    """
-    env_path = os.getenv("MCP_PATH")
-    env_path = _normalize_path(env_path) if env_path else None
-
-    routes = getattr(app, "routes", None)
-    if isinstance(routes, list):
-        # Prefer mounted "/mcp" if present
-        for r in routes:
-            try:
-                if isinstance(r, StarletteMount):
-                    p = getattr(r, "path", None)
-                    if isinstance(p, str):
-                        np = _normalize_path(p)
-                        if np == "/mcp":
-                            return np
-            except Exception:
-                continue
-
-        # Otherwise, look for any mount containing "mcp"
-        for r in routes:
-            try:
-                p = getattr(r, "path", None)
-                if isinstance(p, str):
-                    np = _normalize_path(p)
-                    if "mcp" in np:
-                        return np
-            except Exception:
-                continue
-
-    if env_path:
-        return env_path
-
-    return "/mcp"
 
 
-class _RewriteToInternalMcpPath:
-    """
-    ASGI wrapper that rewrites child-paths so the MCP endpoint is reachable at the mount root.
-
-    Inside a Mount("/v2/mcp", ...), the child scope['path'] is usually "/" for requests to "/v2/mcp".
-    If FastMCP serves MCP at "/mcp", we rewrite:
-        "/"  -> "/mcp"
-        ""   -> "/mcp"
-    For any other path, we leave it alone unless it doesn't start with the internal prefix,
-    in which case we prefix it (best-effort).
-    """
-
-    def __init__(self, app: Any, internal_prefix: str):
-        self.app = app
-        self.internal_prefix = _normalize_path(internal_prefix)
-
-    async def __call__(self, scope: dict, receive: Any, send: Any) -> None:
-        if scope.get("type") != "http":
-            await self.app(scope, receive, send)
-            return
-
-        path = scope.get("path") or ""
-        if not path.startswith("/"):
-            path = "/" + path
-
-        new_path: Optional[str] = None
-
-        if path in ("", "/"):
-            new_path = self.internal_prefix
-        else:
-            # If caller already hits the internal path (e.g., /v2/mcp/mcp), don't double-prefix.
-            if self.internal_prefix != "/" and not (
-                path == self.internal_prefix or path.startswith(self.internal_prefix + "/")
-            ):
-                new_path = self.internal_prefix + path
-
-        if new_path and new_path != path:
-            new_scope = dict(scope)
-            new_scope["path"] = new_path
-            try:
-                new_scope["raw_path"] = new_path.encode("ascii", "ignore")
-            except Exception:
-                pass
-            await self.app(new_scope, receive, send)
-            return
-
-        await self.app(scope, receive, send)
-
-
-def _build_fastmcp_http_app(mcp: FastMCP, path: str = "/mcp") -> Any:
+def _build_fastmcp_http_app(mcp: FastMCP, path: str = "/v1/mcp") -> Any:
     """
     Create the FastMCP streamable-http ASGI app.
 
     Args:
         mcp: The FastMCP instance
-        path: The internal path where FastMCP will serve (default: /mcp)
+        path: The internal path where FastMCP will serve
 
     Note: FastMCP's http_app() creates an ASGI app that serves at an internal path.
     """
