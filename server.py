@@ -53,10 +53,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="Logging level (default: INFO or $LOG_LEVEL).",
     )
 
+    # OAuth is ON by default; disable only if --no-oauth is passed.
+    p.add_argument(
+        "--oauth",
+        dest="oauth",
+        action="store_true",
+        default=True,
+        help="Enable OAuth 2.1 mode (default).",
+    )
+    p.add_argument(
+        "--no-oauth",
+        dest="oauth",
+        action="store_false",
+        help="Disable OAuth mode.",
+    )
+    # We should use local session parameters (like API key) only if we set it explicitly
+
+    p.add_argument(
+        "--use-local",
+        dest="use_local",
+        action="store_true",
+        default=False,
+
+    )
+    # we should use API key from this argument only if --use-local set.
+    # The API key obtained from the OAuth server store and passed via the "api_key" request parameter must overwrite this parameter.
     p.add_argument(
         "--apikey", "--api-key",
         dest="api_key",
-        help="EODHD API key",
+        help="EODHD API key, used only if the API key is not in the request or via OAUth",
     )
 
     return p
@@ -68,8 +93,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args, unknown = parser.parse_known_args(argv)
 
-    # If provided, override env so make_request() picks it up
-    if args.api_key:
+
+    if args.use-local and args.api_key:
         os.environ["EODHD_API_KEY"] = args.api_key
 
     if unknown:
@@ -118,6 +143,29 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if run_http:
+            if args.oauth:
+                logger.info("=" * 70)
+                logger.info("EODHD MCP Server - OAuth 2.1 Mode")
+                logger.info("=" * 70)
+                logger.info("Starting multi-mount server on http://%s:%s", args.host, args.port)
+                logger.info("  - Auth Server: http://%s:%s/", args.host, args.port)
+                logger.info("  - Legacy MCP:  http://%s:%s/v1/mcp (apikey auth)", args.host, args.port)
+                logger.info("  - OAuth MCP:   http://%s:%s/v2/mcp (Bearer token)", args.host, args.port)
+                logger.info("=" * 70)
+
+                # If no canonical public URL is provided, default for local dev.
+                # In production you SHOULD set MCP_SERVER_URL to the externally-reachable HTTPS origin.
+
+                if not os.getenv("MCP_SERVER_URL"):
+                    scheme = os.getenv("MCP_SERVER_SCHEME", "http")
+                    os.environ["MCP_SERVER_URL"] = f"{scheme}://{args.host}:{args.port}"
+
+                # Import and run the multi-mount server
+                from app.oauth.mount_apps import run_multi_mount_server
+
+                run_multi_mount_server(host=args.host, port=args.port)
+                return 0
+
             logger.info(
                 "Starting EODHD MCP HTTP Server on http://%s:%s%s ...",
                 args.host,

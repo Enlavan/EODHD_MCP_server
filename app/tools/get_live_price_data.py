@@ -31,7 +31,7 @@ def register(mcp: FastMCP):
     async def get_live_price_data(
         ticker: str,
         additional_symbols: Optional[Sequence[str]] = None,
-        fmt: str = "json",
+        fmt: Optional[str] = "json",
         api_token: Optional[str] = None,
     ) -> str:
         """

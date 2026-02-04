@@ -30,6 +30,7 @@ from .config import EODHD_API_KEY
 from fastmcp.server.dependencies import get_http_request
 
 def _resolve_eodhd_token_from_request() -> str | None:
+
     try:
         req = get_http_request()
     except Exception:
@@ -51,24 +52,37 @@ def _resolve_eodhd_token_from_request() -> str | None:
     apikey = req.query_params.get("apikey")
     if apikey:
         return apikey
-    return req.query_params.get("api_key") or req.query_params.get("token")
 
+    apikey = req.query_params.get("api_key")
+    if apikey:
+        return apikey
+
+    apikey = req.query_params.get("api-key")
+    if apikey:
+        return apikey
+
+    apikey = req.query_params.get("api_token")
+    if apikey:
+        return apikey
 
 
 
 def _ensure_api_token(url: str) -> str:
     """
     Inject api_token into URL query string if missing.
-    Tool-provided api_token in the URL always wins.
+
+
     """
+
     if "api_token=" in url:
         return url
 
-    token = _resolve_eodhd_token_from_request() or EODHD_API_KEY
-    if not token:
-        return url  # best-effort; caller may have other auth patterns
+    token = _resolve_eodhd_token_from_request()
+    if token:
+        return url + (f"&api_token={token}" if "?" in url else f"?api_token={token}")
 
-    return url + (f"&api_token={token}" if "?" in url else f"?api_token={token}")
+    if not token:
+        return {"error": f"Need to : {m}"}
 
 
 async def make_request(

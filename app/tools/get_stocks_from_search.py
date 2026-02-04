@@ -19,12 +19,12 @@ def register(mcp: FastMCP):
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
     async def get_stocks_from_search(
         query: str,
-        limit: int = 15,                         # per docs: default 15, max 500
-        bonds_only: Optional[bool] = None,       # maps to bonds_only=1
-        exchange: Optional[str] = None,          # e.g., "US", "PA", "FOREX", "NYSE", "NASDAQ"
-        type: Optional[str] = None,              # one of ALLOWED_TYPES
-        fmt: str = "json",                       # API supports json here
-        api_token: Optional[str] = None,         # per-call override
+        limit:  Optional[int] = 500,            # per docs: default 15, max 500
+        bonds_only: Optional[bool] = None,      # maps to bonds_only=1
+        exchange: Optional[str] = None,         # e.g., "US", "PA", "FOREX", "NYSE", "NASDAQ"
+        type: Optional[str] = None,             # one of ALLOWED_TYPES
+        fmt: Optional[str] = "json",            # API supports json here
+        api_token: Optional[str] = None,        # per-call override
     ) -> str:
         """
         Search API for Stocks, ETFs, Mutual Funds, Bonds, and Indices.

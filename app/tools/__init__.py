@@ -13,71 +13,17 @@ MAIN_TOOLS: list[str] = [
     "get_live_price_data",
     "get_intraday_historical_data",
     "get_company_news",
-    "get_sentiment_data",
-    "get_news_word_weights",
     "get_exchanges_list",
     "get_exchange_tickers",
-    "get_macro_indicator",
     "get_stocks_from_search",
     "get_user_details",
-    "get_exchange_details",
-    "get_symbol_change_history",
-    "get_historical_market_cap",
-    "get_insider_transactions",
-    "capture_realtime_ws",
-    "get_us_tick_data",
-    "get_stock_screener_data",
-    "get_economic_events",
-    "get_upcoming_earnings",
-    "get_earnings_trends",
-    "get_upcoming_ipos",
-    "get_upcoming_splits",
-    "get_upcoming_dividends",
-    "get_fundamentals_data",
-    "get_technical_indicators",
-    "get_us_live_extended_quotes",
-    "get_cboe_indices_list",
-    "get_cboe_index_data"
 ]
 
 MARKETPLACE_TOOLS: list[str] = [
-    "get_mp_us_options_contracts",
-    "get_mp_us_options_eod",
-    "get_mp_us_options_underlyings",
-    "get_mp_indices_list",
-    "get_mp_index_components",
+
 ]
 
 THIRD_PARTY_TOOLS: list[str] = [
-    #illio endpoints
-    "get_mp_illio_performance_insights",
-    "get_mp_illio_risk_insights",
-    "get_mp_illio_market_insights_performance",
-    "get_mp_illio_market_insights_best_worst",
-    "get_mp_illio_market_insights_volatility",
-    "get_mp_illio_market_insights_risk_return",
-    "get_mp_illio_market_insights_largest_volatility",
-    "get_mp_illio_market_insights_beta_bands",
-
-    #praams endpoints
-    "get_mp_praams_risk_scoring_by_ticker",
-    "get_mp_praams_risk_scoring_by_isin",
-    "get_mp_praams_bond_analyze_by_isin",
-    "get_mp_praams_bank_income_statement_by_ticker",
-    "get_mp_praams_bank_income_statement_by_isin",
-    "get_mp_praams_bank_balance_sheet_by_ticker",
-    "get_mp_praams_bank_balance_sheet_by_isin",
-    "get_mp_praams_smart_investment_screener_bond",
-    "get_mp_praams_smart_investment_screener_equity",
-    
-    #investverte endpoints
-    "get_mp_investverte_esg_list_companies",
-    "get_mp_investverte_esg_list_countries",
-    "get_mp_investverte_esg_view_country",
-    "get_mp_investverte_esg_view_company",
-    "get_mp_investverte_esg_list_sectors",
-    "get_mp_investverte_esg_view_sector"
-
 
 ]
 
