@@ -94,6 +94,10 @@ EODHD_API_KEY=YOUR_EODHD_API_KEY
 MCP_HOST=127.0.0.1
 MCP_PORT=8000
 JWT_SECRET=YOUR_LONG_RANDOM_SECRET
+MCP_SERVER_URL=https://mcp.eodhd.dev
+# If behind a reverse proxy (recommended), allow X-Forwarded-* handling
+PROXY_HEADERS=true
+FORWARDED_ALLOW_IPS=*
 ```
 
 ---

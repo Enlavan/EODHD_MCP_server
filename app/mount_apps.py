@@ -302,4 +302,14 @@ def run_multi_mount_server(host: str = "0.0.0.0", port: int = 8000) -> None:
     logger.info("  - Legacy MCP:     %s", LEGACY_MCP_MOUNT)
     logger.info("  - OAuth MCP:      %s", OAUTH_MCP_MOUNT)
 
-    uvicorn.run(app, host=host, port=port, log_level="info")
+    proxy_headers = os.getenv("PROXY_HEADERS", "true").strip().lower() in {"1", "true", "yes"}
+    forwarded_allow_ips = os.getenv("FORWARDED_ALLOW_IPS", "*").strip() or "*"
+
+    uvicorn.run(
+        app,
+        host=host,
+        port=port,
+        log_level="info",
+        proxy_headers=proxy_headers,
+        forwarded_allow_ips=forwarded_allow_ips,
+    )
