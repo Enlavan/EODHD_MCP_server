@@ -1,7 +1,7 @@
 #get_live_price_data.py
 
 import json
-from typing import Iterable, Optional, Sequence
+from typing import Iterable, Optional, Sequence, List
 
 from fastmcp import FastMCP
 from app.config import EODHD_API_BASE
@@ -14,10 +14,10 @@ MAX_EXTRA_TICKERS = 20  # soft limit recommended by docs (15–20)
 def _err(msg: str) -> str:
     return json.dumps({"error": msg}, indent=2)
 
-def _normalize_symbols(symbols: Optional[Iterable[str]]) -> list[str]:
+def _normalize_symbols(symbols: Optional[Iterable[str]]) -> List[str]:
     if not symbols:
         return []
-    out: list[str] = []
+    out: List[str] = []
     for s in symbols:
         if not s:
             continue

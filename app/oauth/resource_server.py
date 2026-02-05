@@ -325,6 +325,35 @@ class OAuthMiddleware(BaseHTTPMiddleware):
 
         auth = request.headers.get("authorization") or request.headers.get("Authorization") or ""
         if not auth.lower().startswith("bearer "):
+            # Legacy fallback for /v2/mcp when OAuth client cannot send Bearer token.
+            # Accept api key in query/header (same style as /v1/mcp).
+            legacy_key = (
+                request.query_params.get("apikey")
+                or request.query_params.get("api_key")
+                or request.query_params.get("api-token")
+                or request.query_params.get("api_token")
+                or request.headers.get("x-api-key")
+                or request.headers.get("X-API-Key")
+            )
+            if legacy_key:
+                try:
+                    request.state.eodhd_api_key = str(legacy_key).strip()
+                except Exception:
+                    pass
+                logger.warning(
+                    "OAuth: using legacy api key on %s (host=%s, root_path=%s)",
+                    request.url.path,
+                    request.headers.get("host"),
+                    request.scope.get("root_path"),
+                )
+                return await call_next(request)
+
+            logger.warning(
+                "OAuth: missing Bearer token for %s (host=%s, root_path=%s)",
+                request.url.path,
+                request.headers.get("host"),
+                request.scope.get("root_path"),
+            )
             return JSONResponse(
                 {"error": "unauthorized", "message": "Missing Bearer token"},
                 status_code=401,
@@ -338,6 +367,7 @@ class OAuthMiddleware(BaseHTTPMiddleware):
 
         token = auth.split(" ", 1)[1].strip()
         if not token:
+            logger.warning("OAuth: empty Bearer token for %s", request.url.path)
             return JSONResponse(
                 {"error": "unauthorized", "message": "Empty Bearer token"},
                 status_code=401,
@@ -351,6 +381,16 @@ class OAuthMiddleware(BaseHTTPMiddleware):
 
         eodhd_key = await _resolve_eodhd_key_from_token(request, token)
         if not eodhd_key:
+            try:
+                token_prefix = token[:8]
+            except Exception:
+                token_prefix = "unknown"
+            logger.warning(
+                "OAuth: invalid/expired token for %s (aud_expected=%s, token_prefix=%s)",
+                request.url.path,
+                _resource_url(request),
+                token_prefix,
+            )
             return JSONResponse(
                 {"error": "unauthorized", "message": "Invalid or expired token"},
                 status_code=401,

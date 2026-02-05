@@ -17,12 +17,13 @@ import logging
 import os
 import time
 from dataclasses import dataclass, field, asdict
-from typing import Optional, Any
+from typing import Optional, Any, Dict, List
+from collections.abc import Mapping
 
 logger = logging.getLogger("eodhd-mcp.token_storage")
 
 try:
-    from key_value.aio.protocols import AsyncKeyValue as KeyValue
+    from key_value.aio.protocols.key_value import AsyncKeyValue as KeyValue
     from key_value.aio.stores.memory import MemoryStore
     from key_value.aio.stores.disk import DiskStore
 except Exception:  # pragma: no cover
@@ -48,10 +49,10 @@ def _hash_secret(value: str) -> str:
 class OAuthClient:
     client_id: str
     client_secret: Optional[str]
-    redirect_uris: list[str]
+    redirect_uris: List[str]
     client_name: str
-    grant_types: list[str] = field(default_factory=lambda: ["authorization_code"])
-    response_types: list[str] = field(default_factory=lambda: ["code"])
+    grant_types: List[str] = field(default_factory=lambda: ["authorization_code"])
+    response_types: List[str] = field(default_factory=lambda: ["code"])
     token_endpoint_auth_method: str = "none"  # none|client_secret_post|client_secret_basic
     created_at: float = field(default_factory=_now)
 
@@ -62,7 +63,7 @@ class AuthorizationCode:
     client_id: str
     redirect_uri: str
     user_id: str
-    scopes: list[str]
+    scopes: List[str]
     expires_at: float
     code_challenge: Optional[str] = None
     code_challenge_method: Optional[str] = None
@@ -74,7 +75,7 @@ class AccessToken:
     token: str
     client_id: str
     user_id: str
-    scopes: list[str]
+    scopes: List[str]
     expires_at: float
     issued_at: float
 
@@ -85,7 +86,7 @@ class User:
     eodhd_api_key: str
     name: str = ""
     subscription_type: str = ""
-    scopes: list[str] = field(default_factory=lambda: ["full-access"])
+    scopes: List[str] = field(default_factory=lambda: ["full-access"])
     created_at: float = field(default_factory=_now)
 
 
@@ -123,7 +124,7 @@ class TokenStorage:
 
     def __init__(self, kv: Any):
         self._kv = kv
-        self._fallback: dict[str, dict[str, Any]] = {
+        self._fallback: Dict[str, Dict[str, Any]] = {
             "oauth_clients": {},
             "oauth_auth_codes": {},
             "oauth_access_tokens": {},
@@ -135,12 +136,18 @@ class TokenStorage:
         if self._kv is None:
             self._fallback[collection][key] = value
             return
+        # py-key-value expects a Mapping value; wrap scalars for simple key->value stores.
+        if not isinstance(value, Mapping):
+            value = {"value": value}
         await self._kv.put(collection=collection, key=key, value=value, ttl=ttl)
 
     async def _get(self, collection: str, key: str) -> Any:
         if self._kv is None:
             return self._fallback[collection].get(key)
-        return await self._kv.get(collection=collection, key=key)
+        data = await self._kv.get(collection=collection, key=key)
+        if isinstance(data, Mapping) and set(data.keys()) == {"value"}:
+            return data.get("value")
+        return data
 
     async def _delete(self, collection: str, key: str) -> None:
         if self._kv is None:

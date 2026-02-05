@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+from typing import List, Optional
 
 from dotenv import load_dotenv
 from fastmcp import FastMCP
@@ -86,7 +87,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     # Load .env before parsing so env defaults are available to argparse
     load_dotenv()
     parser = build_parser()
@@ -115,6 +116,16 @@ def main(argv: list[str] | None = None) -> int:
         stream=sys.stderr,
     )
     logger = logging.getLogger("eodhd-mcp")
+    logger.info(
+        "Env summary: MCP_SERVER_URL=%s MCP_HOST=%s MCP_PORT=%s PROXY_HEADERS=%s FORWARDED_ALLOW_IPS=%s JWT_SECRET=%s EODHD_API_KEY=%s",
+        os.getenv("MCP_SERVER_URL"),
+        os.getenv("MCP_HOST"),
+        os.getenv("MCP_PORT"),
+        os.getenv("PROXY_HEADERS"),
+        os.getenv("FORWARDED_ALLOW_IPS"),
+        "set" if os.getenv("JWT_SECRET") else "unset",
+        "set" if os.getenv("EODHD_API_KEY") else "unset",
+    )
 
     mcp = FastMCP("eodhd-datasets")
     register_all(mcp)

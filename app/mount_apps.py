@@ -13,12 +13,7 @@ Why we keep the auth server at "/":
   and FastMCP mounting under a prefix can otherwise "move" discovery routes.
 - So we explicitly mount the auth server at "/" and the MCP resources under /v1 and /v2.
 
-Why path rewriting exists:
-- FastMCP's http_app() commonly exposes MCP under an internal sub-path (often "/mcp").
-- When you Mount("/v2/mcp", app=fastmcp_app), the child app sees request as path "/".
-- If FastMCP doesn't serve MCP at "/", it returns 404.
-- We rewrite child "/" -> "/mcp" (or whatever FastMCP uses internally).
-- IMPORTANT ordering: OAuth middleware runs BEFORE rewriting so it can challenge on "/".
+We configure FastMCP to serve at "/" so it works cleanly when mounted.
 """
 
 import logging
@@ -28,7 +23,6 @@ from typing import Any, AsyncIterator, Optional
 
 from starlette.applications import Starlette
 from starlette.routing import Mount, Route
-from starlette.routing import Mount as StarletteMount  # for isinstance checks
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -45,20 +39,7 @@ LEGACY_MCP_MOUNT = "/v1/mcp"
 OAUTH_MCP_MOUNT = "/v2/mcp"
 
 
-def _normalize_path(p: str) -> str:
-    if not p:
-        return "/"
-    if not p.startswith("/"):
-        p = "/" + p
-    # keep "/" as-is, otherwise remove trailing slash
-    if p != "/" and p.endswith("/"):
-        p = p[:-1]
-    return p
-
-
-
-
-def _build_fastmcp_http_app(mcp: FastMCP, path: str = "/v1/mcp") -> Any:
+def _build_fastmcp_http_app(mcp: FastMCP, path: str = "/") -> Any:
     """
     Create the FastMCP streamable-http ASGI app.
 
@@ -69,37 +50,30 @@ def _build_fastmcp_http_app(mcp: FastMCP, path: str = "/v1/mcp") -> Any:
     Note: FastMCP's http_app() creates an ASGI app that serves at an internal path.
     """
     try:
-        # Try with both transport and path parameters
         return mcp.http_app(transport="streamable-http", path=path)
     except TypeError:
         try:
-            # Fallback: try with just path
             return mcp.http_app(path=path)
         except TypeError:
-            # Final fallback: no parameters
             return mcp.http_app()
 
 
-def _wrap_oauth_and_rewrite(
-    base_fastmcp_app: Any,
-    internal_mcp_path: str,
-    enable_oauth: bool,
-) -> Any:
+def _ensure_accept_header(app: Any) -> Any:
     """
-    IMPORTANT: ordering for /v2/mcp (OAuth-protected resource):
-      1) OAuthMiddleware FIRST (so it sees the original "/")
-      2) rewrite SECOND (so FastMCP receives "/mcp")
-
-    This ensures the protected resource base (/v2/mcp) returns the correct 401 + WWW-Authenticate
-    challenge instead of 404 from FastMCP.
+    FastMCP streamable-http can return 406 if Accept is missing or too strict.
+    This wrapper forces a sane default for MCP endpoints.
     """
-    rewritten = _RewriteToInternalMcpPath(base_fastmcp_app, internal_prefix=internal_mcp_path)
+    async def _asgi(scope, receive, send):
+        if scope.get("type") == "http":
+            headers = list(scope.get("headers") or [])
+            # Remove any existing Accept to avoid overly strict values.
+            headers = [(k, v) for (k, v) in headers if k.lower() != b"accept"]
+            headers.append((b"accept", b"application/json, text/event-stream;q=0.9, */*;q=0.1"))
+            scope = dict(scope)
+            scope["headers"] = headers
+        await app(scope, receive, send)
 
-    if not enable_oauth:
-        return rewritten
-
-    # BaseHTTPMiddleware can be used as a standalone ASGI wrapper
-    return OAuthMiddleware(rewritten, exclude_paths=[])
+    return _asgi
 
 
 def create_multi_mount_app() -> Starlette:
@@ -129,30 +103,16 @@ def create_multi_mount_app() -> Starlette:
     # Legacy MCP (/v1/mcp)
     legacy_mcp = FastMCP("eodhd-datasets-legacy")
     register_all(legacy_mcp)
-    # Try to configure FastMCP to serve at "/" so it works when mounted
     legacy_base_app = _build_fastmcp_http_app(legacy_mcp, path="/")
-    legacy_internal = _detect_fastmcp_internal_mcp_path(legacy_base_app)
-    # If FastMCP still serves at /mcp internally, we need rewriting
-    if legacy_internal != "/":
-        legacy_app = _wrap_oauth_and_rewrite(legacy_base_app, legacy_internal, enable_oauth=False)
-        logger.info("✓ Created legacy MCP app (mounted at %s, internal=%s, with rewrite)", LEGACY_MCP_MOUNT, legacy_internal)
-    else:
-        legacy_app = legacy_base_app
-        logger.info("✓ Created legacy MCP app (mounted at %s, no rewrite needed)", LEGACY_MCP_MOUNT)
+    legacy_app = _ensure_accept_header(legacy_base_app)
+    logger.info("✓ Created legacy MCP app (mounted at %s)", LEGACY_MCP_MOUNT)
 
     # OAuth MCP (/v2/mcp)
     oauth_mcp = FastMCP("eodhd-datasets-oauth")
     register_all(oauth_mcp)
-    # Try to configure FastMCP to serve at "/" so it works when mounted
     oauth_base_app = _build_fastmcp_http_app(oauth_mcp, path="/")
-    oauth_internal = _detect_fastmcp_internal_mcp_path(oauth_base_app)
-    # If FastMCP still serves at /mcp internally, we need rewriting and OAuth
-    if oauth_internal != "/":
-        oauth_app = _wrap_oauth_and_rewrite(oauth_base_app, oauth_internal, enable_oauth=True)
-        logger.info("✓ Created OAuth MCP app (mounted at %s, internal=%s, with rewrite)", OAUTH_MCP_MOUNT, oauth_internal)
-    else:
-        oauth_app = OAuthMiddleware(oauth_base_app, exclude_paths=[])
-        logger.info("✓ Created OAuth MCP app (mounted at %s, no rewrite needed)", OAUTH_MCP_MOUNT)
+    oauth_app = OAuthMiddleware(_ensure_accept_header(oauth_base_app), exclude_paths=[])
+    logger.info("✓ Created OAuth MCP app (mounted at %s)", OAUTH_MCP_MOUNT)
 
     # Create a wrapper to handle the OAuth app as both Route and Mount
     # This is needed because Starlette's Mount redirects paths without trailing slashes
@@ -231,18 +191,18 @@ def create_multi_mount_app() -> Starlette:
         oauth_ls = getattr(oauth_base_app, "lifespan", None)
 
         if legacy_ls and oauth_ls:
-            async with legacy_ls(app):
-                async with oauth_ls(app):
+            async with legacy_ls(legacy_base_app):
+                async with oauth_ls(oauth_base_app):
                     yield
             return
 
         if legacy_ls:
-            async with legacy_ls(app):
+            async with legacy_ls(legacy_base_app):
                 yield
             return
 
         if oauth_ls:
-            async with oauth_ls(app):
+            async with oauth_ls(oauth_base_app):
                 yield
             return
 

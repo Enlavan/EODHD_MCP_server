@@ -2,13 +2,13 @@
 
 import importlib
 import logging
-from typing import Iterable
+from typing import Iterable, List, Set
 
 logger = logging.getLogger("eodhd-mcp.tools")
 
 # --- Tool module names (filenames without .py) ---
 
-MAIN_TOOLS: list[str] = [
+MAIN_TOOLS: List[str] = [
     "get_historical_stock_prices",
     "get_live_price_data",
     "get_intraday_historical_data",
@@ -19,15 +19,15 @@ MAIN_TOOLS: list[str] = [
     "get_user_details",
 ]
 
-MARKETPLACE_TOOLS: list[str] = [
+MARKETPLACE_TOOLS: List[str] = [
 
 ]
 
-THIRD_PARTY_TOOLS: list[str] = [
+THIRD_PARTY_TOOLS: List[str] = [
 
 ]
 
-ALL_TOOLS: list[str] = MAIN_TOOLS + MARKETPLACE_TOOLS + THIRD_PARTY_TOOLS
+ALL_TOOLS: List[str] = MAIN_TOOLS + MARKETPLACE_TOOLS + THIRD_PARTY_TOOLS
 
 
 def _safe_register(mcp, module_name: str, attr: str = "register") -> None:
@@ -55,9 +55,9 @@ def _safe_register(mcp, module_name: str, attr: str = "register") -> None:
         logger.error("Failed to register tool '%s': %s: %s", module_name, type(e).__name__, e)
 
 
-def _dedupe(seq: Iterable[str]) -> list[str]:
-    seen: set[str] = set()
-    out: list[str] = []
+def _dedupe(seq: Iterable[str]) -> List[str]:
+    seen: Set[str] = set()
+    out: List[str] = []
     for item in seq:
         if item not in seen:
             out.append(item)

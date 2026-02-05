@@ -15,7 +15,7 @@ import os
 import logging
 import time
 import hashlib
-from typing import Optional
+from typing import Optional, Dict, List, Tuple
 from dataclasses import dataclass, field
 
 import httpx
@@ -52,7 +52,7 @@ SCOPES = {
 }
 
 # Tool to scope mapping
-TOOL_SCOPES: dict[str, list[str]] = {
+TOOL_SCOPES: Dict[str, List[str]] = {
     # EOD data
     "get_historical_stock_prices": ["read:eod", "full-access"],
     "get_bulk_eod": ["read:eod", "full-access"],
@@ -126,7 +126,7 @@ class TokenInfo:
     active: bool = False
     subject: Optional[str] = None  # user_id
     client_id: Optional[str] = None
-    scopes: list[str] = field(default_factory=list)
+    scopes: List[str] = field(default_factory=list)
     expires_at: Optional[int] = None
     issued_at: Optional[int] = None
 
@@ -134,7 +134,7 @@ class TokenInfo:
         """Check if token has a specific scope."""
         return scope in self.scopes or "full-access" in self.scopes
 
-    def has_any_scope(self, scopes: list[str]) -> bool:
+    def has_any_scope(self, scopes: List[str]) -> bool:
         """Check if token has any of the specified scopes."""
         return any(self.has_scope(s) for s in scopes)
 
@@ -166,7 +166,7 @@ class OAuthValidator:
         self.introspection_url = introspection_url
         self.jwks_url = jwks_url
         self.cache_ttl = cache_ttl
-        self._cache: dict[str, tuple[TokenInfo, float]] = {}
+        self._cache: Dict[str, Tuple[TokenInfo, float]] = {}
         self._http_client: Optional[httpx.AsyncClient] = None
 
     async def _get_client(self) -> httpx.AsyncClient:
@@ -222,9 +222,9 @@ class OAuthValidator:
             self._set_cached(token, info)
             return info
 
-    # No validation configured: reject token (explicitly fail closed).
-    logger.error("No token validation configured - rejecting token")
-    return TokenInfo(active=False)
+        # No validation configured: reject token (explicitly fail closed).
+        logger.error("No token validation configured - rejecting token")
+        return TokenInfo(active=False)
 
     def _validate_jwt(self, token: str) -> TokenInfo:
         """
@@ -290,7 +290,7 @@ class OAuthValidator:
             self._http_client = None
 
 
-def get_protected_resource_metadata(server_url: str = MCP_SERVER_URL) -> dict:
+def get_protected_resource_metadata(server_url: str = MCP_SERVER_URL) -> Dict[str, object]:
     """
     Generate OAuth 2.0 Protected Resource Metadata (RFC9728).
 
@@ -371,7 +371,7 @@ def get_www_authenticate_header(
     return ", ".join(parts)
 
 
-def get_required_scopes(tool_name: str) -> list[str]:
+def get_required_scopes(tool_name: str) -> List[str]:
     """
     Get required scopes for a tool.
 

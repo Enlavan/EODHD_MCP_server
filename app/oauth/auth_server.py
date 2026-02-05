@@ -30,7 +30,7 @@ import re
 import secrets
 import socket
 import time
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, List
 from urllib.parse import urlencode, urlparse, urlunparse, parse_qsl
 
 import httpx
@@ -39,7 +39,7 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse, RedirectResponse, Response
+from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from starlette.routing import Route
 
 from .token_storage import (
@@ -381,7 +381,7 @@ async def register_client_endpoint(request: Request) -> JSONResponse:
     if not isinstance(redirect_uris, list) or not redirect_uris:
         return JSONResponse({"error": "invalid_request", "error_description": "redirect_uris must be a non-empty list"}, status_code=400)
 
-    norm_redirects: list[str] = []
+    norm_redirects: List[str] = []
     for u in redirect_uris:
         if not isinstance(u, str) or not u.strip():
             continue
@@ -435,20 +435,23 @@ async def register_client_endpoint(request: Request) -> JSONResponse:
 
 
 async def login_page(request: Request) -> HTMLResponse:
-    html = """
+    err = request.query_params.get("error")
+    error_block = f"<div class='error'>{err}</div>" if err else ""
+
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
       <title>EODHD MCP Server - Login</title>
       <style>
-        body { font-family: Arial, sans-serif; max-width: 520px; margin: 50px auto; padding: 20px; }
-        .info { background:#e3f2fd; padding:15px; border-radius:6px; border-left:4px solid #2196F3; margin-bottom:18px;}
-        .error { background:#ffebee; padding:10px; border-radius:6px; margin-bottom:12px; color:#b71c1c;}
-        label { display:block; font-weight:bold; margin-bottom:6px; }
-        input { width:100%; padding:10px; box-sizing:border-box; font-family: monospace; }
-        button { width:100%; padding:12px; margin-top:14px; background:#4CAF50; color:white; border:0; cursor:pointer; font-size:16px;}
-        button:hover { background:#45a049; }
-        .help { font-size: 12px; color:#666; margin-top:6px; }
+        body {{ font-family: Arial, sans-serif; max-width: 520px; margin: 50px auto; padding: 20px; }}
+        .info {{ background:#e3f2fd; padding:15px; border-radius:6px; border-left:4px solid #2196F3; margin-bottom:18px; }}
+        .error {{ background:#ffebee; padding:10px; border-radius:6px; margin-bottom:12px; color:#b71c1c; }}
+        label {{ display:block; font-weight:bold; margin-bottom:6px; }}
+        input {{ width:100%; padding:10px; box-sizing:border-box; font-family: monospace; }}
+        button {{ width:100%; padding:12px; margin-top:14px; background:#4CAF50; color:white; border:0; cursor:pointer; font-size:16px; }}
+        button:hover {{ background:#45a049; }}
+        .help {{ font-size: 12px; color:#666; margin-top:6px; }}
       </style>
     </head>
     <body>
@@ -467,9 +470,7 @@ async def login_page(request: Request) -> HTMLResponse:
     </body>
     </html>
     """
-    err = request.query_params.get("error")
-    error_block = f"<div class='error'>{err}</div>" if err else ""
-    return HTMLResponse(html.format(error_block=error_block))
+    return HTMLResponse(html)
 
 
 async def login_submit(request: Request) -> RedirectResponse:
@@ -819,8 +820,15 @@ async def well_known_protected_resource(request: Request, resource_path: str = "
 
 
 def create_auth_server_app() -> Starlette:
+    global JWT_SECRET
     if not JWT_SECRET:
-        raise RuntimeError("JWT_SECRET must be set for OAuth mode.")
+        # Dev-friendly fallback: generate a secret, but warn that tokens will not survive restarts.
+        JWT_SECRET = secrets.token_urlsafe(32)
+        os.environ["JWT_SECRET"] = JWT_SECRET
+        logger.warning(
+            "JWT_SECRET was not set. Generated a temporary secret for this process. "
+            "Tokens will be invalid after restart. Set JWT_SECRET in env for production."
+        )
     routes = [
         Route("/register", register_client_endpoint, methods=["POST"]),
         Route("/login", login_page, methods=["GET"]),

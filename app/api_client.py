@@ -1,9 +1,7 @@
 # app/api_client.py
 
-from __future__ import annotations
-
 import os
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 import httpx
 from fastmcp.server.dependencies import get_http_request
@@ -95,10 +93,10 @@ def _ensure_api_token(url: str) -> Tuple[Optional[str], Optional[str]]:
 async def make_request(
     url: str,
     method: str = "GET",
-    json_body: dict | None = None,
-    headers: dict | None = None,
+    json_body: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, Any]] = None,
     timeout: float = 30.0,
-) -> dict | None:
+) -> Optional[Dict[str, Any]]:
     """
     Generic HTTP request helper for EODHD APIs.
 

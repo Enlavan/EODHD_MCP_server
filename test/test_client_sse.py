@@ -4,7 +4,7 @@ import asyncio
 import json
 import os
 from importlib import import_module
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fastmcp import Client
 
@@ -69,7 +69,7 @@ def _pp(obj: Any) -> str:
 
 # ---------- Runner ----------
 async def run_tests(
-    endpoint: str | None = None,
+    endpoint: Optional[str] = None,
 ) -> None:
     _load_test_modules()
 
