@@ -37,7 +37,14 @@ MAIN_TOOLS: list[str] = [
     "get_technical_indicators",
     "get_us_live_extended_quotes",
     "get_cboe_indices_list",
-    "get_cboe_index_data"
+    "get_cboe_index_data",
+    "get_bulk_fundamentals",
+    "get_stock_market_logos",
+    "get_stock_market_logos_svg",
+    "get_ust_bill_rates",
+    "get_ust_yield_rates",
+    "get_ust_real_yield_rates",
+    "get_ust_long_term_rates",
 ]
 
 MARKETPLACE_TOOLS: list[str] = [
@@ -46,6 +53,11 @@ MARKETPLACE_TOOLS: list[str] = [
     "get_mp_us_options_underlyings",
     "get_mp_indices_list",
     "get_mp_index_components",
+    "get_mp_tick_data",
+    "get_mp_tradinghours_list_markets",
+    "get_mp_tradinghours_lookup_markets",
+    "get_mp_tradinghours_market_details",
+    "get_mp_tradinghours_market_status",
 ]
 
 THIRD_PARTY_TOOLS: list[str] = [
@@ -69,6 +81,9 @@ THIRD_PARTY_TOOLS: list[str] = [
     "get_mp_praams_bank_balance_sheet_by_isin",
     "get_mp_praams_smart_investment_screener_bond",
     "get_mp_praams_smart_investment_screener_equity",
+    "get_mp_praams_report_equity_by_ticker",
+    "get_mp_praams_report_equity_by_isin",
+    "get_mp_praams_report_bond_by_isin",
     
     #investverte endpoints
     "get_mp_investverte_esg_list_companies",
