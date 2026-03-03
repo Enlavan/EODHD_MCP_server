@@ -768,14 +768,14 @@ def register(add_test, COMMON):
         },
     })
 
-    # --- Fundamentals: BTC-USD.CC (General, Tech, Resources, Statistics) ---
+    # --- Fundamentals: BTC-USD.CC (General, Tech, resources, Statistics) ---
     add_test({
         "name": "Fundamentals: Cryptocurrency",
         "tool": "get_fundamentals_data",
         "use_common": ["api_token"],
         "params": {
             "ticker": "BTC-USD.CC",
-            # sections omitted -> module defaults to General, Tech, Resources, Statistics
+            # sections omitted -> module defaults to General, Tech, resources, Statistics
         },
     })
 
