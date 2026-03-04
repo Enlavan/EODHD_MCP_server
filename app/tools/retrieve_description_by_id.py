@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import Optional, Union
 
@@ -11,6 +12,220 @@ def _err(msg: str) -> str:
 
 
 _RESOURCES_DIR = Path(__file__).resolve().parent.parent / "resources" / "references"
+
+# ---------------------------------------------------------------------------
+# Markdown → nested-dict parser
+# ---------------------------------------------------------------------------
+
+_HEADING_RE = re.compile(r'^(#{1,6})\s+(.*)')
+_BOLD_KV_RE = re.compile(r'^\*\*(.+?)\*\*\s*:\s*(.*)')
+_UL_RE = re.compile(r'^[-*]\s+(.*)')
+_OL_RE = re.compile(r'^\d+\.\s+(.*)')
+_TABLE_SEP_RE = re.compile(r'^\s*\|[\s\-:|]+\|\s*$')
+_HR_RE = re.compile(r'^[-*_]{3,}\s*$')
+
+
+def _strip_md(text: str) -> str:
+    """Remove inline markdown formatting, keeping plain text."""
+    text = re.sub(r'\[([^\]]*)\]\([^)]*\)', r'\1', text)   # [link](url)
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)            # **bold**
+    text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)',
+                  r'\1', text)                               # *italic*
+    text = re.sub(r'`(.+?)`', r'\1', text)                  # `code`
+    return text.strip()
+
+
+def _put(sec: dict, key: str, val):
+    """Insert *key* into *sec*, disambiguating duplicates."""
+    if key not in sec:
+        sec[key] = val
+    else:
+        c = 2
+        while f"{key} ({c})" in sec:
+            c += 1
+        sec[f"{key} ({c})"] = val
+
+
+def _parse_markdown(text: str) -> dict:
+    """Parse a markdown document into a nested dict / list structure.
+
+    Mapping rules
+    -------------
+    * ``# / ## / ###`` headings  → nested dict keys
+    * ``**Key**: Value``         → key-value pair in current section
+    * Markdown tables            → list of row-dicts
+    * Bullet / numbered lists    → list of strings
+    * Fenced code blocks         → string value (``example_<lang>``)
+    * Block-quotes               → string value (``note``)
+    * Plain text paragraphs      → string value (``text``)
+
+    Leaf sections that contain only one anonymous block (table, list,
+    text, or note) are "unwrapped" so the section value becomes the
+    block itself rather than a single-key dict.
+    """
+    lines = text.split('\n')
+    root: dict = {}
+    stack: list[tuple[int, dict]] = [(0, root)]
+    i, n = 0, len(lines)
+
+    def cur() -> dict:
+        return stack[-1][1]
+
+    while i < n:
+        s = lines[i].strip()
+
+        # skip blanks and horizontal rules
+        if not s or _HR_RE.match(s):
+            i += 1
+            continue
+
+        # ── fenced code block ──────────────────────────────────────
+        if s.startswith('```'):
+            lang = s[3:].strip()
+            buf: list[str] = []
+            i += 1
+            while i < n and not lines[i].strip().startswith('```'):
+                buf.append(lines[i])
+                i += 1
+            if i < n:
+                i += 1
+            key = f"example_{lang}" if lang else "example"
+            _put(cur(), key, '\n'.join(buf))
+            continue
+
+        # ── heading ────────────────────────────────────────────────
+        m = _HEADING_RE.match(s)
+        if m:
+            lvl, title = len(m.group(1)), m.group(2).strip()
+            while len(stack) > 1 and stack[-1][0] >= lvl:
+                stack.pop()
+            sec: dict = {}
+            _put(cur(), title, sec)
+            stack.append((lvl, sec))
+            i += 1
+            continue
+
+        # ── table ──────────────────────────────────────────────────
+        if s.startswith('|') and s.endswith('|') and s.count('|') >= 3:
+            hdrs = [h.strip() for h in s.split('|')[1:-1]]
+            i += 1
+            if i < n and _TABLE_SEP_RE.match(lines[i]):
+                i += 1
+            rows: list[dict] = []
+            while (i < n
+                   and lines[i].strip().startswith('|')
+                   and lines[i].strip().endswith('|')):
+                cells = [c.strip()
+                         for c in lines[i].strip().split('|')[1:-1]]
+                rows.append({
+                    hdrs[j]: _strip_md(cells[j]) if j < len(cells) else ""
+                    for j in range(len(hdrs))
+                })
+                i += 1
+            _put(cur(), "_table", rows)
+            continue
+
+        # ── bold key: value ────────────────────────────────────────
+        m = _BOLD_KV_RE.match(s)
+        if m:
+            key, val = m.group(1).strip(), _strip_md(m.group(2))
+            i += 1
+            # if value is empty, try to merge with a following code block
+            if not val:
+                j = i
+                while j < n and not lines[j].strip():
+                    j += 1
+                if j < n and lines[j].strip().startswith('```'):
+                    lang = lines[j].strip()[3:].strip()
+                    buf = []
+                    j += 1
+                    while j < n and not lines[j].strip().startswith('```'):
+                        buf.append(lines[j])
+                        j += 1
+                    if j < n:
+                        j += 1
+                    val = '\n'.join(buf)
+                    i = j
+            _put(cur(), key, val)
+            continue
+
+        # ── blockquote ─────────────────────────────────────────────
+        if s.startswith('>'):
+            buf = []
+            while i < n and lines[i].strip().startswith('>'):
+                buf.append(lines[i].strip().lstrip('>').strip())
+                i += 1
+            _put(cur(), "_note", _strip_md(' '.join(buf)))
+            continue
+
+        # ── unordered list ─────────────────────────────────────────
+        if _UL_RE.match(s):
+            items: list[str] = []
+            while i < n and _UL_RE.match(lines[i].strip()):
+                items.append(
+                    _strip_md(_UL_RE.match(lines[i].strip()).group(1)))
+                i += 1
+            _put(cur(), "_items", items)
+            continue
+
+        # ── ordered list ───────────────────────────────────────────
+        if _OL_RE.match(s):
+            items = []
+            while i < n and _OL_RE.match(lines[i].strip()):
+                items.append(
+                    _strip_md(_OL_RE.match(lines[i].strip()).group(1)))
+                i += 1
+            _put(cur(), "_items", items)
+            continue
+
+        # ── plain text paragraph ───────────────────────────────────
+        buf = []
+        while i < n:
+            ln = lines[i].strip()
+            if (not ln
+                    or ln.startswith(('#', '|', '```', '>'))
+                    or _UL_RE.match(ln) or _OL_RE.match(ln)
+                    or _BOLD_KV_RE.match(ln) or _HR_RE.match(ln)):
+                break
+            buf.append(ln)
+            i += 1
+        if buf:
+            _put(cur(), "_text", _strip_md(' '.join(buf)))
+
+    return _simplify(root)
+
+
+def _simplify(obj):
+    """Collapse single-child internal nodes and clean up temp keys.
+
+    * A dict whose *only* keys are internal (``_table``, ``_items``,
+      ``_text``, ``_note``) and there is exactly one such key is replaced
+      by that key's value (unwrapped).
+    * Otherwise internal keys are renamed (leading ``_`` removed).
+    """
+    if not isinstance(obj, dict):
+        return obj
+
+    result = {
+        k: _simplify(v) if isinstance(v, dict) else v
+        for k, v in obj.items()
+    }
+
+    internal = [k for k in result if k.startswith('_')]
+    regular = [k for k in result if not k.startswith('_')]
+
+    # single anonymous block, no named children → unwrap
+    if not regular and len(internal) == 1:
+        return result[internal[0]]
+
+    # rename remaining internal keys
+    for k in internal:
+        clean = k[1:]
+        if clean not in result:
+            result[clean] = result.pop(k)
+
+    return result
+
 
 _PAGE_REGISTRY: dict[int, dict[int, tuple[str, str]]] = {
     # type 0 — subscription plans
@@ -228,6 +443,7 @@ def register(mcp: FastMCP):
         title = Path(filename).stem.replace("-", " ").replace("_", " ").title()
 
         return json.dumps(
-            {"type": page_type, "id": page_id, "title": title, "content": content},
+            {"type": page_type, "id": page_id, "title": title,
+             "content": _parse_markdown(content)},
             indent=2,
         )
