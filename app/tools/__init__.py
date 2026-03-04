@@ -45,6 +45,7 @@ MAIN_TOOLS: list[str] = [
     "get_ust_yield_rates",
     "get_ust_real_yield_rates",
     "get_ust_long_term_rates",
+    "retrieve_description_by_id",
 ]
 
 MARKETPLACE_TOOLS: list[str] = [
