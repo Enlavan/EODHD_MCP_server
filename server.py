@@ -1,12 +1,17 @@
+# server.py
 import argparse
 import logging
 import os
 import sys
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
+from app.api_client import close_client
+from app.prompts import register_all as register_all_prompts
+from app.resources import register_all as register_all_resources
+from app.tools import register_all as register_all_tools
 from dotenv import load_dotenv
 from fastmcp import FastMCP
-from app.tools import register_all as register_all_tools
-from app.resources import register_all as register_all_resources
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,7 +60,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     p.add_argument(
-        "--apikey", "--api-key",
+        "--apikey",
+        "--api-key",
         dest="api_key",
         help="EODHD API key",
     )
@@ -73,10 +79,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.api_key:
         os.environ["EODHD_API_KEY"] = args.api_key
 
-    if unknown:
-        # Don’t print secrets; just show shapes
-        print(f"Ignoring extra args from client: {len(unknown)} item(s)", file=sys.stderr)
-
     logging.basicConfig(
         level=getattr(logging, args.log_level.upper(), logging.INFO),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -84,9 +86,29 @@ def main(argv: list[str] | None = None) -> int:
     )
     logger = logging.getLogger("eodhd-mcp")
 
-    mcp = FastMCP("eodhd-datasets")
+    if unknown:
+        logger.warning("Ignoring extra args from client: %d item(s)", len(unknown))
+
+    if not os.environ.get("EODHD_API_KEY"):
+        logger.warning(
+            "No EODHD_API_KEY set. Set EODHD_API_KEY env var or pass --apikey to use your key.",
+        )
+
+    @asynccontextmanager
+    async def _lifespan(_mcp: FastMCP) -> AsyncIterator[None]:
+        """Startup / shutdown hook running inside the server's event loop."""
+        yield
+        # ── shutdown ──
+        logger.info("Closing shared HTTP client…")
+        try:
+            await close_client()
+        except Exception:
+            logger.exception("Failed to close shared HTTP client.")
+
+    mcp: FastMCP = FastMCP("eodhd-datasets", lifespan=_lifespan)
     register_all_tools(mcp)
     register_all_resources(mcp)
+    register_all_prompts(mcp)
 
     # Determine transport:
     # - If --stdio: stdio

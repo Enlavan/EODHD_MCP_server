@@ -1,15 +1,17 @@
+# tests/manual/test_client_http.py
+import argparse
 import asyncio
 import json
 import os
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from fastmcp import Client
 
-# ---------- Common defaults (can be overridden per test) ----------
-COMMON: Dict[str, Any] = {
-    #"api_token": "PLACE_YOUR_API_KEY_HERE",
-    "api_token": os.getenv("EODHD_API_KEY", "demo"),
+# ---------- Common defaults (can be overridden per manual) ----------
+COMMON: dict[str, Any] = {
+    # "api_token": "PLACE_YOUR_API_TOKEN_HERE",
+    "api_token": os.getenv("EODHD_API_KEY"),
     "fmt": "json",
     "ticker": "AAPL.US",
     "start_date": "2023-01-01",
@@ -19,14 +21,15 @@ COMMON: Dict[str, Any] = {
 }
 
 # ---------- Test registry ----------
-Test = Dict[str, Any]
-TESTS: List[Test] = []
+Test = dict[str, Any]
+TESTS: list[Test] = []
+
 
 def register_test(test: Test) -> None:
     """
-    Register a test.
+    Register a manual.
 
-    test = {
+    manual = {
       "name": "Human-friendly name",
       "tool": "get_historical_stock_prices",
       "use_common": ["api_token", "fmt", "ticker", "start_date", "end_date"],  # optional list
@@ -37,8 +40,9 @@ def register_test(test: Test) -> None:
         raise ValueError("Test must include 'name' and 'tool'.")
     TESTS.append(test)
 
-def _build_params(test: Test) -> Dict[str, Any]:
-    params: Dict[str, Any] = {}
+
+def _build_params(test: Test) -> dict[str, Any]:
+    params: dict[str, Any] = {}
     use_common = test.get("use_common", [])
     for key in use_common:
         if key in COMMON and COMMON[key] is not None:
@@ -47,11 +51,13 @@ def _build_params(test: Test) -> Dict[str, Any]:
     params.update(test.get("params", {}))
     return params
 
-# ---------- Where to load tests from (single registration point) ----------
+
+# ---------- Where to load auto from (single registration point) ----------
 TEST_MODULES = [
-    "all_tests_beta",
-    #"all_tests",# add more like "eod", "intraday", etc.
+    # "all_tests_beta",
+    "all_tests",  # add more like "eod", "intraday", etc.
 ]
+
 
 def _load_test_modules() -> None:
     for mod_name in TEST_MODULES:
@@ -61,6 +67,7 @@ def _load_test_modules() -> None:
             mod.register(register_test, COMMON)
         else:
             raise RuntimeError(f"Test module '{mod_name}' must define a callable 'register(register_fn, COMMON)'.")
+
 
 # ---------- Pretty print helpers ----------
 def _pp(obj: Any) -> str:
@@ -78,6 +85,7 @@ def _pp(obj: Any) -> str:
     except Exception:
         return str(obj)
 
+
 # ---------- Runner ----------
 async def run_tests(endpoint: str = "http://127.0.0.1:8000/mcp") -> None:
     _load_test_modules()
@@ -86,7 +94,7 @@ async def run_tests(endpoint: str = "http://127.0.0.1:8000/mcp") -> None:
         tools = await client.list_tools()
         print("Available tools:", [t["name"] if isinstance(t, dict) else t for t in tools])
 
-        print("\n=== Running tests ===")
+        print("\n=== Running auto ===")
         for idx, test in enumerate(TESTS, start=1):
             name = test["name"]
             tool = test["tool"]
@@ -101,6 +109,23 @@ async def run_tests(endpoint: str = "http://127.0.0.1:8000/mcp") -> None:
             except Exception as e:
                 print("ERROR:", e)
 
+
 # ---------- CLI entry ----------
 if __name__ == "__main__":
-    asyncio.run(run_tests())
+    parser = argparse.ArgumentParser(description="Run MCP tool auto against HTTP server.")
+    parser.add_argument(
+        "--apikey",
+        "--api-key",
+        dest="api_key",
+        default=None,
+        help="EODHD API key (overrides EODHD_API_KEY env var).",
+    )
+    parser.add_argument(
+        "--endpoint",
+        default="http://127.0.0.1:8000/mcp",
+        help="HTTP endpoint URL (default: http://127.0.0.1:8000/mcp).",
+    )
+    args = parser.parse_args()
+    if args.api_key:
+        COMMON["api_token"] = args.api_key
+    asyncio.run(run_tests(endpoint=args.endpoint))
