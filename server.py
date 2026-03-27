@@ -1,12 +1,17 @@
+# server.py
 import argparse
 import logging
 import os
 import sys
-from typing import List, Optional
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
+from app.api_client import close_client
+from app.prompts import register_all as register_all_prompts
+from app.resources import register_all as register_all_resources
+from app.tools import register_all as register_all_tools
 from dotenv import load_dotenv
 from fastmcp import FastMCP
-from app.tools import register_all
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -45,8 +50,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--path",
-        default=os.getenv("MCP_V1_PATH", "/v1/mcp"),
-        help="HTTP path for streamable-http (default: /v1/mcp or $MCP_V1_PATH).",
+        default=os.getenv("MCP_PATH", "/mcp"),
+        help="HTTP path for streamable-http (default: /mcp or $MCP_PATH).",
     )
     p.add_argument(
         "--log-level",
@@ -54,61 +59,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Logging level (default: INFO or $LOG_LEVEL).",
     )
 
-    # OAuth is ON by default; disable only if --no-oauth is passed.
     p.add_argument(
-        "--oauth",
-        dest="oauth",
-        action="store_true",
-        default=True,
-        help="Enable OAuth 2.1 mode (default).",
-    )
-    p.add_argument(
-        "--no-oauth",
-        dest="oauth",
-        action="store_false",
-        help="Disable OAuth mode.",
-    )
-    # We should use local session parameters (like API key) only if we set it explicitly
-
-    p.add_argument(
-        "--use-local",
-        dest="use_local",
-        action="store_true",
-        default=False,
-
-    )
-    # We use API key from this argument only if --use-local is set and transport is stdio.
-    p.add_argument(
-        "--apikey", "--api-key",
+        "--apikey",
+        "--api-key",
         dest="api_key",
-        help="EODHD API key (stdio only when used with --use-local).",
+        help="EODHD API key",
     )
 
     return p
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     # Load .env before parsing so env defaults are available to argparse
     load_dotenv()
     parser = build_parser()
     args, unknown = parser.parse_known_args(argv)
 
-
-    # Only allow CLI/env API key injection for non-HTTP contexts (stdio).
-    # For HTTP/SSE, API keys must come from request headers/query or OAuth.
-    run_stdio = args.stdio
-    run_sse = args.sse
-    run_http = args.http or not (args.stdio or args.sse)
-
-    if args.use_local and args.api_key:
-        if run_stdio:
-            os.environ["EODHD_API_KEY"] = args.api_key
-        else:
-            print("Ignoring --use-local/--apikey for HTTP/SSE transports.", file=sys.stderr)
-
-    if unknown:
-        # Don’t print secrets; just show shapes
-        print(f"Ignoring extra args from client: {len(unknown)} item(s)", file=sys.stderr)
+    # If provided, override env so make_request() picks it up
+    if args.api_key:
+        os.environ["EODHD_API_KEY"] = args.api_key
 
     logging.basicConfig(
         level=getattr(logging, args.log_level.upper(), logging.INFO),
@@ -116,24 +85,38 @@ def main(argv: Optional[List[str]] = None) -> int:
         stream=sys.stderr,
     )
     logger = logging.getLogger("eodhd-mcp")
-    logger.info(
-        "Env summary: MCP_SERVER_URL=%s MCP_HOST=%s MCP_PORT=%s PROXY_HEADERS=%s FORWARDED_ALLOW_IPS=%s JWT_SECRET=%s EODHD_API_KEY=%s",
-        os.getenv("MCP_SERVER_URL"),
-        os.getenv("MCP_HOST"),
-        os.getenv("MCP_PORT"),
-        os.getenv("PROXY_HEADERS"),
-        os.getenv("FORWARDED_ALLOW_IPS"),
-        "set" if os.getenv("JWT_SECRET") else "unset",
-        "set" if os.getenv("EODHD_API_KEY") else "unset",
-    )
 
-    mcp = FastMCP("eodhd-datasets")
-    register_all(mcp)
+    if unknown:
+        logger.warning("Ignoring extra args from client: %d item(s)", len(unknown))
+
+    if not os.environ.get("EODHD_API_KEY"):
+        logger.warning(
+            "No EODHD_API_KEY set. Set EODHD_API_KEY env var or pass --apikey to use your key.",
+        )
+
+    @asynccontextmanager
+    async def _lifespan(_mcp: FastMCP) -> AsyncIterator[None]:
+        """Startup / shutdown hook running inside the server's event loop."""
+        yield
+        # ── shutdown ──
+        logger.info("Closing shared HTTP client…")
+        try:
+            await close_client()
+        except Exception:
+            logger.exception("Failed to close shared HTTP client.")
+
+    mcp: FastMCP = FastMCP("eodhd-datasets", lifespan=_lifespan)
+    register_all_tools(mcp)
+    register_all_resources(mcp)
+    register_all_prompts(mcp)
 
     # Determine transport:
     # - If --stdio: stdio
     # - If --sse: SSE
     # - Else: HTTP (streamable-http)
+    run_stdio = args.stdio
+    run_sse = args.sse
+    run_http = args.http or not (args.stdio or args.sse)
 
     try:
         if run_stdio:
@@ -159,29 +142,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 0
 
         if run_http:
-            if args.oauth:
-                logger.info("=" * 70)
-                logger.info("EODHD MCP Server - OAuth 2.1 Mode")
-                logger.info("=" * 70)
-                logger.info("Starting multi-mount server on http://%s:%s", args.host, args.port)
-                logger.info("  - Auth Server: http://%s:%s/", args.host, args.port)
-                logger.info("  - Legacy MCP:  http://%s:%s/v1/mcp (apikey auth)", args.host, args.port)
-                logger.info("  - OAuth MCP:   http://%s:%s/v2/mcp (Bearer token)", args.host, args.port)
-                logger.info("=" * 70)
-
-                # If no canonical public URL is provided, default for local dev.
-                # In production you SHOULD set MCP_SERVER_URL to the externally-reachable HTTPS origin.
-
-                if not os.getenv("MCP_SERVER_URL"):
-                    scheme = os.getenv("MCP_SERVER_SCHEME", "http")
-                    os.environ["MCP_SERVER_URL"] = f"{scheme}://{args.host}:{args.port}"
-
-                # Import and run the multi-mount server
-                from app.mount_apps import run_multi_mount_server
-
-                run_multi_mount_server(host=args.host, port=args.port)
-                return 0
-
             logger.info(
                 "Starting EODHD MCP HTTP Server on http://%s:%s%s ...",
                 args.host,

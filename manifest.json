@@ -4,24 +4,22 @@
   "version": "2.3.2",
   "description": "A simple MCP server for EODHD APIs",
   "author": {
-    "name": "Enlavan",
+    "name": "EODHD",
     "email": "support@eodhistoricaldata.com",
-    "url": "https://github.com/Enlavan/EODHD_MCP_server"
+    "url": "https://github.com/EodHistoricalData/EODHD-MCP-Server"
   },
   "server": {
     "type": "python",
-    "entry_point": "server.py",
+    "entry_point": "entrypoints/server_stdio.py",
     "mcp_config": {
       "command": "python3",
       "args": [
-        "${__dirname}/server.py",
-        "--stdio",
-        "--use-local",
+        "${__dirname}/entrypoints/server_stdio.py",
         "--apikey",
         "${user_config.EODHD_API_KEY}"
       ],
       "env": {
-        "PYTHONPATH": "${__dirname}",
+        "PYTHONPATH": "server/lib",
         "EODHD_API_KEY": "${user_config.EODHD_API_KEY}"
       }
     }
@@ -32,7 +30,7 @@
       "title": "EODHD API Key",
       "description": "EODHD API key",
       "required": true,
-      "sensitive": false
+      "sensitive": true
     }
   },
   "license": "MIT"
